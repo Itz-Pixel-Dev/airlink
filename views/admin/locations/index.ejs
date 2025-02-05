@@ -1,0 +1,80 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Locations</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Manage server locations and data centers.</p>
+		</div>
+		<div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+			<a href="/admin/locations/create" class="block px-4 py-2 text-sm font-medium text-center text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				Add Location
+			</a>
+		</div>
+	</div>
+
+	<div class="mt-8 flow-root">
+		<div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+			<div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+				<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-xl">
+					<table class="min-w-full divide-y divide-neutral-300 dark:divide-neutral-700">
+						<thead class="bg-neutral-50 dark:bg-neutral-900">
+							<tr>
+								<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-neutral-900 dark:text-white sm:pl-6">Location</th>
+								<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Short Code</th>
+								<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Nodes</th>
+								<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Status</th>
+								<th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+									<span class="sr-only">Actions</span>
+								</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-neutral-200 dark:divide-neutral-800 bg-white dark:bg-neutral-900">
+							<% locations.forEach(location => { %>
+							<tr>
+								<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-neutral-900 dark:text-white sm:pl-6">
+									<%= location.name %>
+								</td>
+								<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+									<%= location.short_code %>
+								</td>
+								<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+									<%= location.node_count %>
+								</td>
+								<td class="whitespace-nowrap px-3 py-4 text-sm">
+									<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium
+										<%= location.status === 'active' ? 'bg-green-100 text-green-700' :
+											location.status === 'maintenance' ? 'bg-yellow-100 text-yellow-700' :
+											'bg-red-100 text-red-700' %>">
+										<%= location.status.charAt(0).toUpperCase() + location.status.slice(1) %>
+									</span>
+								</td>
+								<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+									<a href="/admin/locations/edit/<%= location.id %>" class="text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white mr-4">Edit</a>
+									<button onclick="deleteLocation('<%= location.id %>')" class="text-red-600 hover:text-red-900 dark:hover:text-red-400">Delete</button>
+								</td>
+							</tr>
+							<% }) %>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+function deleteLocation(id) {
+	if (confirm('Are you sure you want to delete this location? All associated nodes must be reassigned first.')) {
+		fetch(`/admin/locations/${id}`, {
+			method: 'DELETE'
+		}).then(response => {
+			if (response.ok) {
+				window.location.reload();
+			} else {
+				showToast('Failed to delete location', 'error');
+			}
+		});
+	}
+}
+</script>

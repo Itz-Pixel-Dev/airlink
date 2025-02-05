@@ -1,0 +1,258 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">File Manager</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Manage your server's files and directories.</p>
+		</div>
+		<div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex gap-2">
+			<button onclick="uploadFiles()" class="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				Upload Files
+			</button>
+			<button onclick="createFile()" class="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				New File
+			</button>
+			<button onclick="createDirectory()" class="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				New Directory
+			</button>
+		</div>
+	</div>
+
+	<!-- Path Navigation -->
+	<div class="mt-4 flex items-center space-x-2 text-sm text-neutral-500 dark:text-neutral-400">
+		<a href="#" onclick="navigateTo('/')" class="hover:text-neutral-900 dark:hover:text-white">/</a>
+		<% currentPath.split('/').filter(Boolean).forEach((part, index, array) => { %>
+			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+			</svg>
+			<a href="#" onclick="navigateTo('<%= array.slice(0, index + 1).join('/') %>')" class="hover:text-neutral-900 dark:hover:text-white">
+				<%= part %>
+			</a>
+		<% }) %>
+	</div>
+
+	<!-- File List -->
+	<div class="mt-4">
+		<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-xl">
+			<table class="min-w-full divide-y divide-neutral-300 dark:divide-neutral-700">
+				<thead class="bg-neutral-50 dark:bg-neutral-900">
+					<tr>
+						<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-neutral-900 dark:text-white sm:pl-6">Name</th>
+						<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Size</th>
+						<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Last Modified</th>
+						<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Permissions</th>
+						<th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+							<span class="sr-only">Actions</span>
+						</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-neutral-200 dark:divide-neutral-800 bg-white dark:bg-neutral-900">
+					<% if (currentPath !== '/') { %>
+						<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800">
+							<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+								<a href="#" onclick="navigateUp()" class="flex items-center text-neutral-900 dark:text-white">
+									<svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+									</svg>
+									..
+								</a>
+							</td>
+							<td colspan="4"></td>
+						</tr>
+					<% } %>
+					<% files.forEach(file => { %>
+						<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800">
+							<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+								<a href="#" onclick="<%= file.isDirectory ? `navigateTo('${currentPath}/${file.name}')` : `editFile('${file.name}')` %>" 
+									class="flex items-center text-neutral-900 dark:text-white">
+									<% if (file.isDirectory) { %>
+										<svg class="h-5 w-5 mr-2 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+										</svg>
+									<% } else { %>
+										<svg class="h-5 w-5 mr-2 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+										</svg>
+									<% } %>
+									<%= file.name %>
+								</a>
+							</td>
+							<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+								<%= file.isDirectory ? '-' : formatSize(file.size) %>
+							</td>
+							<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+								<%= new Date(file.mtime).toLocaleString() %>
+							</td>
+							<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+								<%= file.mode %>
+							</td>
+							<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+								<% if (!file.isDirectory) { %>
+									<button onclick="downloadFile('<%= file.name %>')" class="text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white mr-4">Download</button>
+								<% } %>
+								<button onclick="renameItem('<%= file.name %>')" class="text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white mr-4">Rename</button>
+								<button onclick="deleteItem('<%= file.name %>')" class="text-red-600 hover:text-red-900 dark:hover:text-red-400">Delete</button>
+							</td>
+						</tr>
+					<% }) %>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<!-- File Upload Modal -->
+<div id="upload-modal" class="hidden fixed inset-0 bg-neutral-900/50 backdrop-blur-sm z-50">
+	<div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+		<div class="relative transform overflow-hidden rounded-xl bg-white dark:bg-neutral-900 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+			<form id="upload-form" onsubmit="handleUpload(event)" class="space-y-4">
+				<div>
+					<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Select Files</label>
+					<input type="file" id="file-input" multiple
+						class="mt-1 block w-full text-sm text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200 dark:file:bg-neutral-800 dark:file:text-neutral-300">
+				</div>
+
+				<div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+					<button type="submit"
+						class="inline-flex w-full justify-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 sm:col-start-2">
+						Upload
+					</button>
+					<button type="button" onclick="hideUploadModal()"
+						class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-300 dark:ring-neutral-700 dark:hover:bg-neutral-700 sm:col-start-1 sm:mt-0">
+						Cancel
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+function formatSize(bytes) {
+	const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+	let size = bytes;
+	let unit = 0;
+	while (size >= 1024 && unit < units.length - 1) {
+		size /= 1024;
+		unit++;
+	}
+	return `${Math.round(size * 100) / 100} ${units[unit]}`;
+}
+
+function navigateTo(path) {
+	window.location.href = `/server/<%= server.id %>/files?path=${encodeURIComponent(path)}`;
+}
+
+function navigateUp() {
+	const path = '<%= currentPath %>'.split('/').slice(0, -1).join('/') || '/';
+	navigateTo(path);
+}
+
+function uploadFiles() {
+	document.getElementById('upload-modal').classList.remove('hidden');
+}
+
+function hideUploadModal() {
+	document.getElementById('upload-modal').classList.add('hidden');
+}
+
+function handleUpload(event) {
+	event.preventDefault();
+	const formData = new FormData();
+	const files = document.getElementById('file-input').files;
+	
+	for (let file of files) {
+		formData.append('files', file);
+	}
+
+	fetch(`/server/<%= server.id %>/files/upload?path=<%= currentPath %>`, {
+		method: 'POST',
+		body: formData
+	}).then(response => {
+		if (response.ok) {
+			window.location.reload();
+		} else {
+			showToast('Failed to upload files', 'error');
+		}
+	});
+}
+
+function createFile() {
+	const name = prompt('Enter file name:');
+	if (name) {
+		fetch(`/server/<%= server.id %>/files/create`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ path: `${currentPath}/${name}` })
+		}).then(response => {
+			if (response.ok) {
+				window.location.reload();
+			} else {
+				showToast('Failed to create file', 'error');
+			}
+		});
+	}
+}
+
+function createDirectory() {
+	const name = prompt('Enter directory name:');
+	if (name) {
+		fetch(`/server/<%= server.id %>/files/create-directory`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ path: `${currentPath}/${name}` })
+		}).then(response => {
+			if (response.ok) {
+				window.location.reload();
+			} else {
+				showToast('Failed to create directory', 'error');
+			}
+		});
+	}
+}
+
+function editFile(name) {
+	window.location.href = `/server/<%= server.id %>/files/edit?path=${encodeURIComponent(`${currentPath}/${name}`)}`;
+}
+
+function downloadFile(name) {
+	window.location.href = `/server/<%= server.id %>/files/download?path=${encodeURIComponent(`${currentPath}/${name}`)}`;
+}
+
+function renameItem(name) {
+	const newName = prompt('Enter new name:', name);
+	if (newName && newName !== name) {
+		fetch(`/server/<%= server.id %>/files/rename`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				from: `${currentPath}/${name}`,
+				to: `${currentPath}/${newName}`
+			})
+		}).then(response => {
+			if (response.ok) {
+				window.location.reload();
+			} else {
+				showToast('Failed to rename item', 'error');
+			}
+		});
+	}
+}
+
+function deleteItem(name) {
+	if (confirm(`Are you sure you want to delete ${name}?`)) {
+		fetch(`/server/<%= server.id %>/files/delete`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ path: `${currentPath}/${name}` })
+		}).then(response => {
+			if (response.ok) {
+				window.location.reload();
+			} else {
+				showToast('Failed to delete item', 'error');
+			}
+		});
+	}
+}
+</script>

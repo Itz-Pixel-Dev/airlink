@@ -1,0 +1,134 @@
+<div class="language-switcher relative">
+	<button id="language-toggle" class="p-2 rounded-xl dark:text-white border border-neutral-700/20 dark:border-white/5 hover:scale-105 active:scale-95 duration-200 text-neutral-500 flex items-center gap-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+		<img id="current-flag" src="/assets/flags/en.svg" class="w-5 h-5 rounded-sm" alt="language flag">
+		<span id="current-language" class="text-sm font-medium">English</span>
+		<svg class="h-4 w-4 transition-transform duration-200" id="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+		</svg>
+	</button>
+	
+	<div id="language-dropdown" class="hidden absolute right-0 mt-2 py-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-neutral-700/20 dark:border-white/5 backdrop-blur-sm z-50">
+		<a href="#" data-lang="en" data-name="English" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150">
+			<img src="/assets/flags/en.svg" class="w-5 h-5 mr-3 rounded-sm" alt="English">
+			English
+		</a>
+		<a href="#" data-lang="es" data-name="Español" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150">
+			<img src="/assets/flags/es.svg" class="w-5 h-5 mr-3 rounded-sm" alt="Español">
+			Español
+		</a>
+		<a href="#" data-lang="fr" data-name="Français" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150">
+			<img src="/assets/flags/fr.svg" class="w-5 h-5 mr-3 rounded-sm" alt="Français">
+			Français
+		</a>
+		<a href="#" data-lang="de" data-name="Deutsch" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150">
+			<img src="/assets/flags/de.svg" class="w-5 h-5 mr-3 rounded-sm" alt="Deutsch">
+			Deutsch
+		</a>
+	</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const languageToggle = document.getElementById('language-toggle');
+	const languageDropdown = document.getElementById('language-dropdown');
+	const currentLanguage = document.getElementById('current-language');
+	const currentFlag = document.getElementById('current-flag');
+	const dropdownArrow = document.getElementById('dropdown-arrow');
+	const languageOptions = document.querySelectorAll('[data-lang]');
+
+	// Function to set language
+	const setLanguage = (lang, name) => {
+		document.cookie = `lang=${lang};path=/;max-age=31536000`;
+		currentLanguage.textContent = name;
+		currentFlag.src = `/assets/flags/${lang}.svg`;
+		currentFlag.alt = name;
+		
+		// Add animation class
+		currentFlag.classList.add('scale-110');
+		setTimeout(() => currentFlag.classList.remove('scale-110'), 200);
+		
+		window.location.reload();
+	};
+
+	// Initialize language
+	const savedLang = document.cookie.split(';').find(c => c.trim().startsWith('lang='));
+	if (savedLang) {
+		const lang = savedLang.split('=')[1];
+		const option = document.querySelector(`[data-lang="${lang}"]`);
+		if (option) {
+			currentLanguage.textContent = option.getAttribute('data-name');
+			currentFlag.src = `/assets/flags/${lang}.svg`;
+			currentFlag.alt = option.getAttribute('data-name');
+		}
+	}
+
+	// Toggle dropdown with animation
+	languageToggle.addEventListener('click', (e) => {
+		e.stopPropagation();
+		const isHidden = languageDropdown.classList.contains('hidden');
+		
+		// Rotate arrow
+		dropdownArrow.style.transform = isHidden ? 'rotate(180deg)' : '';
+		
+		// Toggle dropdown with fade
+		if (isHidden) {
+			languageDropdown.classList.remove('hidden');
+			languageDropdown.classList.add('animate-fadeIn');
+		} else {
+			languageDropdown.classList.add('animate-fadeOut');
+			setTimeout(() => {
+				languageDropdown.classList.add('hidden');
+				languageDropdown.classList.remove('animate-fadeOut');
+			}, 150);
+		}
+	});
+
+	// Handle language selection
+	languageOptions.forEach(option => {
+		option.addEventListener('click', (e) => {
+			e.preventDefault();
+			const lang = e.target.closest('a').getAttribute('data-lang');
+			const name = e.target.closest('a').getAttribute('data-name');
+			setLanguage(lang, name);
+			
+			// Hide dropdown with animation
+			dropdownArrow.style.transform = '';
+			languageDropdown.classList.add('animate-fadeOut');
+			setTimeout(() => {
+				languageDropdown.classList.add('hidden');
+				languageDropdown.classList.remove('animate-fadeOut');
+			}, 150);
+		});
+	});
+
+	// Close dropdown when clicking outside
+	document.addEventListener('click', () => {
+		dropdownArrow.style.transform = '';
+		languageDropdown.classList.add('animate-fadeOut');
+		setTimeout(() => {
+			languageDropdown.classList.add('hidden');
+			languageDropdown.classList.remove('animate-fadeOut');
+		}, 150);
+	});
+});
+</script>
+
+<style>
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(-10px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+	from { opacity: 1; transform: translateY(0); }
+	to { opacity: 0; transform: translateY(-10px); }
+}
+
+.animate-fadeIn {
+	animation: fadeIn 0.15s ease-out forwards;
+}
+
+.animate-fadeOut {
+	animation: fadeOut 0.15s ease-out forwards;
+}
+</style>

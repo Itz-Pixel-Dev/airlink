@@ -1,0 +1,41 @@
+{
+	"_commentary": "Kategorie Titel und Beschreibung",
+	"_commentary_admin": "Admin Kategoriebereich",
+
+	"adminOverviewTitle": "Übersicht",
+	"adminOverviewText": "Eine einfache Übersicht Ihres Panels.",
+
+	"adminImagesTitle": "Bilder verwalten",
+	"adminImagesText": "Laden Sie Bilder hoch oder erstellen Sie sie manuell für Ihre Instanzen.",
+
+	"adminSettingsTitle": "Einstellungen",
+	"adminSettingsText": "Liste aller Einstellungen im Airlink-Panel.",
+
+	"adminEditNodeTitle": "Node bearbeiten",
+	"adminEditNodeText": "Einzelnen Node bearbeiten.",
+
+	"adminNodesTitle": "Nodes",
+	"adminNodesText": "Liste aller im Airlink-Panel eingerichteten Nodes.",
+
+	"createNewNode": "Neuen Node erstellen",
+	"configure": "Konfigurieren",
+	"ram": "RAM",
+	"disk": "Festplatte",
+	"cpu": "CPU",
+	"addressIP": "IP-Adresse",
+	"daemonPort": "Daemon-Port",
+	"success": "Erfolg",
+	"actionCompleted": "Die Aktion wurde erfolgreich abgeschlossen.",
+	"name": "Name",
+	"connection": "Verbindung",
+	"instances": "Instanzen",
+	"actions": "Aktionen",
+	"username": "Benutzername",
+	"password": "Passwort",
+	"email": "E-Mail",
+	"role": "Rolle",
+	"update": "Aktualisieren",
+	"delete": "Löschen",
+	"cancel": "Abbrechen",
+	"create": "Erstellen"
+}

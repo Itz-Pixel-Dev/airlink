@@ -1,0 +1,77 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">System Activity Log</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">View all system activities and events.</p>
+		</div>
+		<div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+			<button onclick="clearLogs()" class="block px-4 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-xl hover:bg-red-700">
+				Clear Logs
+			</button>
+		</div>
+	</div>
+
+	<div class="mt-8 flow-root">
+		<div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+			<div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+				<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-xl">
+					<table class="min-w-full divide-y divide-neutral-300 dark:divide-neutral-700">
+						<thead class="bg-neutral-50 dark:bg-neutral-900">
+							<tr>
+								<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-neutral-900 dark:text-white sm:pl-6">Timestamp</th>
+								<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Event</th>
+								<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">User</th>
+								<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">IP Address</th>
+								<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Details</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-neutral-200 dark:divide-neutral-800 bg-white dark:bg-neutral-900">
+							<% activities.forEach(activity => { %>
+							<tr>
+								<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-neutral-900 dark:text-white sm:pl-6">
+									<%= activity.timestamp %>
+								</td>
+								<td class="whitespace-nowrap px-3 py-4 text-sm">
+									<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium
+										<%= activity.type === 'error' ? 'bg-red-100 text-red-700' :
+											activity.type === 'warning' ? 'bg-yellow-100 text-yellow-700' :
+											'bg-green-100 text-green-700' %>">
+										<%= activity.event %>
+									</span>
+								</td>
+								<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+									<%= activity.user %>
+								</td>
+								<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+									<%= activity.ip %>
+								</td>
+								<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+									<%= activity.details %>
+								</td>
+							</tr>
+							<% }) %>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+function clearLogs() {
+	if (confirm('Are you sure you want to clear all activity logs? This action cannot be undone.')) {
+		fetch('/admin/activity/clear', {
+			method: 'POST'
+		}).then(response => {
+			if (response.ok) {
+				window.location.reload();
+			} else {
+				showToast('Failed to clear logs', 'error');
+			}
+		});
+	}
+}
+</script>

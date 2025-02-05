@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  username      String?   @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  isAdmin       Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  description   String?   @default("No About Me")
+  lastLoginAt   DateTime?
+  lastLoginIp   String?
+  tokenVersion  Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  servers       Server[]
+  apiKeys       ApiKey[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  session_id String   @unique
+  data       String
+  expires    DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([session_id])
+  @@map("sessions")
+}
+
+model Server {
+  id           Int        @id @default(autoincrement())
+  UUID         String     @unique @default(uuid())
+  name         String
+  description  String?
+  status       String     @default("offline")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  Ports        String
+  Memory       Int
+  Cpu          Int
+  Storage      Int
+  Variables    Json?
+  StartCommand String?
+  dockerImage  String?
+  Installing   Boolean    @default(true)
+  Suspended    Boolean    @default(false)
+  ownerId      Int
+  nodeId       Int
+  imageId      Int
+  node         Node       @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  owner        Users      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  image        Images     @relation(fields: [imageId], references: [id], onDelete: Restrict)
+  Database     Database[]
+
+  @@index([UUID])
+  @@index([ownerId])
+  @@map("servers")
+}
+
+model Images {
+  id           Int      @id @default(autoincrement())
+  UUID         String   @unique @default(uuid())
+  name         String
+  description  String?
+  author       String?
+  authorName   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  meta         Json?
+  dockerImages String?
+  startup      String?
+  info         String?
+  scripts      Json?
+  variables    Json?
+  servers      Server[]
+
+  @@index([UUID])
+  @@map("images")
+}
+
+model Node {
+  id          Int      @id @default(autoincrement())
+  name        String
+  ram         Int      @default(0)
+  cpu         Int      @default(0)
+  disk        Int      @default(0)
+  address     String   @default("127.0.0.1")
+  port        Int      @default(3001)
+  key         String
+  isActive    Boolean  @default(true)
+  lastPing    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  servers     Server[]
+
+  @@index([address, port])
+  @@map("nodes")
+}
+
+model Settings {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@map("settings")
+}
+
+model ApiKey {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  name        String
+  userId      Int
+  user        Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissions Json?
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  active      Boolean  @default(true)
+
+  @@index([key])
+  @@index([userId])
+  @@map("api_keys")
+}
+
+model Database {
+  id        Int      @id @default(autoincrement())
+  UUID      String   @unique @default(uuid())
+  name      String
+  host      String
+  port      Int
+  username  String
+  password  String
+  size      Int      @default(0)
+  serverId  Int
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([UUID])
+  @@index([serverId])
+  @@map("databases")
+}

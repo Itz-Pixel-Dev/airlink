@@ -1,0 +1,106 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Security Settings</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Configure system security and authentication settings.</p>
+		</div>
+	</div>
+
+	<form onsubmit="saveSettings(event)" class="mt-8 space-y-8">
+		<!-- Authentication Settings -->
+		<div class="bg-white dark:bg-neutral-900 shadow sm:rounded-xl">
+			<div class="px-4 py-5 sm:p-6">
+				<h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-white">Authentication</h3>
+				<div class="mt-6 space-y-6">
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" id="two_factor_required" name="two_factor_required" <%= settings.two_factor_required ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label for="two_factor_required" class="font-medium text-neutral-700 dark:text-neutral-300">Require Two-Factor Authentication</label>
+							<p class="text-neutral-500 dark:text-neutral-400">Force all users to set up 2FA for their accounts.</p>
+						</div>
+					</div>
+
+					<div class="sm:col-span-4">
+						<label for="session_timeout" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Session Timeout (minutes)</label>
+						<input type="number" id="session_timeout" name="session_timeout" value="<%= settings.session_timeout %>" min="5" max="1440"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+						<p class="mt-1 text-sm text-neutral-500">Users will be logged out after this period of inactivity.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Password Policy -->
+		<div class="bg-white dark:bg-neutral-900 shadow sm:rounded-xl">
+			<div class="px-4 py-5 sm:p-6">
+				<h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-white">Password Policy</h3>
+				<div class="mt-6 space-y-6">
+					<div class="sm:col-span-4">
+						<label for="min_password_length" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Minimum Password Length</label>
+						<input type="number" id="min_password_length" name="min_password_length" value="<%= settings.min_password_length %>" min="8" max="32"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" id="require_special_chars" name="require_special_chars" <%= settings.require_special_chars ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label for="require_special_chars" class="font-medium text-neutral-700 dark:text-neutral-300">Require Special Characters</label>
+							<p class="text-neutral-500 dark:text-neutral-400">Passwords must contain at least one special character.</p>
+						</div>
+					</div>
+
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" id="require_numbers" name="require_numbers" <%= settings.require_numbers ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label for="require_numbers" class="font-medium text-neutral-700 dark:text-neutral-300">Require Numbers</label>
+							<p class="text-neutral-500 dark:text-neutral-400">Passwords must contain at least one number.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="flex justify-end">
+			<button type="submit" class="ml-3 inline-flex justify-center rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				Save Changes
+			</button>
+		</div>
+	</form>
+</div>
+
+<script>
+function saveSettings(event) {
+	event.preventDefault();
+	
+	const data = {
+		two_factor_required: document.getElementById('two_factor_required').checked,
+		session_timeout: document.getElementById('session_timeout').value,
+		min_password_length: document.getElementById('min_password_length').value,
+		require_special_chars: document.getElementById('require_special_chars').checked,
+		require_numbers: document.getElementById('require_numbers').checked
+	};
+
+	fetch('/admin/settings/security', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	}).then(response => {
+		if (response.ok) {
+			showToast('Settings saved successfully', 'success');
+		} else {
+			showToast('Failed to save settings', 'error');
+		}
+	});
+}
+</script>

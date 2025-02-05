@@ -1,0 +1,41 @@
+{
+	"_commentary": "Sección de título y descripción de categoría",
+	"_commentary_admin": "Sección de administrador de categoría",
+
+	"adminOverviewTitle": "Vista General",
+	"adminOverviewText": "Una vista general simple de tu Panel.",
+
+	"adminImagesTitle": "Gestionar Imágenes",
+	"adminImagesText": "Sube o crea manualmente imágenes para tus instancias.",
+
+	"adminSettingsTitle": "Configuración",
+	"adminSettingsText": "Lista de todas las configuraciones del panel Airlink.",
+
+	"adminEditNodeTitle": "Editar Nodo",
+	"adminEditNodeText": "Editar un nodo individual.",
+
+	"adminNodesTitle": "Nodos",
+	"adminNodesText": "Lista de todos los nodos configurados en el panel Airlink.",
+
+	"createNewNode": "Crear nuevo nodo",
+	"configure": "Configurar",
+	"ram": "RAM",
+	"disk": "Disco",
+	"cpu": "CPU",
+	"addressIP": "Dirección IP",
+	"daemonPort": "Puerto Daemon",
+	"success": "Éxito",
+	"actionCompleted": "La acción se completó con éxito.",
+	"name": "Nombre",
+	"connection": "Conexión",
+	"instances": "Instancias",
+	"actions": "Acciones",
+	"username": "Usuario",
+	"password": "Contraseña",
+	"email": "Correo",
+	"role": "Rol",
+	"update": "Actualizar",
+	"delete": "Eliminar",
+	"cancel": "Cancelar",
+	"create": "Crear"
+}

@@ -1,0 +1,137 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Startup Configuration</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Configure your server's startup parameters and environment variables.</p>
+		</div>
+	</div>
+
+	<div class="mt-8 max-w-4xl">
+		<form action="/server/<%= server.id %>/settings/startup" method="POST" class="space-y-6">
+			<!-- Startup Command -->
+			<div class="bg-white dark:bg-neutral-900 shadow-sm ring-1 ring-neutral-900/5 rounded-xl p-6">
+				<h2 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Startup Command</h2>
+				<div>
+					<textarea name="startup" id="startup" rows="3" required
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm font-mono"><%= server.startup %></textarea>
+					<p class="mt-2 text-sm text-neutral-500">Available variables: {{SERVER_MEMORY}}, {{SERVER_IP}}, {{SERVER_PORT}}</p>
+				</div>
+			</div>
+
+			<!-- Docker Configuration -->
+			<div class="bg-white dark:bg-neutral-900 shadow-sm ring-1 ring-neutral-900/5 rounded-xl p-6">
+				<h2 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Docker Configuration</h2>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<!-- Image -->
+					<div>
+						<label for="docker_image" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Docker Image</label>
+						<select name="docker_image" id="docker_image" required
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+							<% images.forEach(image => { %>
+								<option value="<%= image.id %>" <%= server.dockerImage === image.id ? 'selected' : '' %>>
+									<%= image.name %>
+								</option>
+							<% }) %>
+						</select>
+					</div>
+
+					<!-- Container Memory -->
+					<div>
+						<label for="memory" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Memory Limit (MB)</label>
+						<input type="number" name="memory" id="memory" required min="128" step="128" value="<%= server.memory %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+				</div>
+			</div>
+
+			<!-- Environment Variables -->
+			<div class="bg-white dark:bg-neutral-900 shadow-sm ring-1 ring-neutral-900/5 rounded-xl p-6">
+				<div class="flex justify-between items-center mb-4">
+					<h2 class="text-lg font-medium text-neutral-900 dark:text-white">Environment Variables</h2>
+					<button type="button" onclick="addVariable()" 
+						class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-neutral-700 bg-neutral-100 rounded-xl hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700">
+						<svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+						</svg>
+						Add Variable
+					</button>
+				</div>
+				<div id="variables-container" class="space-y-4">
+					<% server.env.forEach(variable => { %>
+						<div class="variable-group grid grid-cols-1 gap-4 sm:grid-cols-2 border border-neutral-200 dark:border-neutral-700 rounded-xl p-4">
+							<div>
+								<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Name</label>
+								<input type="text" name="env_names[]" value="<%= variable.name %>"
+									class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+							</div>
+							<div class="flex gap-2">
+								<div class="flex-1">
+									<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Value</label>
+									<input type="text" name="env_values[]" value="<%= variable.value %>"
+										class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+								</div>
+								<div class="flex items-end">
+									<button type="button" onclick="removeVariable(this)"
+										class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 bg-red-100 rounded-xl hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50">
+										<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+										</svg>
+									</button>
+								</div>
+							</div>
+						</div>
+					<% }) %>
+				</div>
+			</div>
+
+			<div class="flex justify-end">
+				<button type="submit"
+					class="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+					Save Changes
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- Variable Template -->
+<template id="variable-template">
+	<div class="variable-group grid grid-cols-1 gap-4 sm:grid-cols-2 border border-neutral-200 dark:border-neutral-700 rounded-xl p-4">
+		<div>
+			<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Name</label>
+			<input type="text" name="env_names[]" placeholder="VARIABLE_NAME"
+				class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+		</div>
+		<div class="flex gap-2">
+			<div class="flex-1">
+				<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Value</label>
+				<input type="text" name="env_values[]" placeholder="Value"
+					class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+			</div>
+			<div class="flex items-end">
+				<button type="button" onclick="removeVariable(this)"
+					class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 bg-red-100 rounded-xl hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50">
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+					</svg>
+				</button>
+			</div>
+		</div>
+	</div>
+</template>
+
+<script>
+function addVariable() {
+	const container = document.getElementById('variables-container');
+	const template = document.getElementById('variable-template');
+	const clone = template.content.cloneNode(true);
+	container.appendChild(clone);
+}
+
+function removeVariable(button) {
+	const variableGroup = button.closest('.variable-group');
+	variableGroup.remove();
+}
+</script>

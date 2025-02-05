@@ -1,0 +1,120 @@
+<%- include('../../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Edit API Application</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Modify the settings and permissions for your API application.</p>
+		</div>
+	</div>
+
+	<div class="mt-8 max-w-2xl">
+		<form action="/admin/api/applications/<%= application.id %>" method="POST" class="space-y-6">
+			<!-- Application Name -->
+			<div>
+				<label for="name" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Application Name</label>
+				<div class="mt-1">
+					<input type="text" name="name" id="name" required value="<%= application.name %>"
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+				</div>
+			</div>
+
+			<!-- API Key Display -->
+			<div>
+				<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">API Key</label>
+				<div class="mt-1 flex items-center">
+					<code class="flex-1 rounded-xl bg-neutral-100 px-3 py-2 text-sm dark:bg-neutral-800">
+						<%= application.identifier %>
+					</code>
+					<button type="button" onclick="regenerateKey('<%= application.id %>')"
+						class="ml-3 inline-flex items-center rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700">
+						Regenerate
+					</button>
+				</div>
+				<p class="mt-2 text-sm text-neutral-500">This key is used to authenticate API requests.</p>
+			</div>
+
+			<!-- Description -->
+			<div>
+				<label for="description" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Description</label>
+				<div class="mt-1">
+					<textarea name="description" id="description" rows="3"
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"><%= application.description %></textarea>
+				</div>
+			</div>
+
+			<!-- Permissions -->
+			<div>
+				<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Permissions</label>
+				<div class="mt-4 space-y-4">
+					<% const permissions = application.permissions || []; %>
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" name="permissions[]" value="user.read"
+								<%= permissions.includes('user.read') ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label class="font-medium text-neutral-700 dark:text-neutral-300">Read User Data</label>
+							<p class="text-neutral-500">Access user information and profiles</p>
+						</div>
+					</div>
+
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" name="permissions[]" value="server.read"
+								<%= permissions.includes('server.read') ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label class="font-medium text-neutral-700 dark:text-neutral-300">Read Server Data</label>
+							<p class="text-neutral-500">View server information and status</p>
+						</div>
+					</div>
+
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" name="permissions[]" value="server.write"
+								<%= permissions.includes('server.write') ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label class="font-medium text-neutral-700 dark:text-neutral-300">Manage Servers</label>
+							<p class="text-neutral-500">Create, modify, and delete servers</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="flex justify-end gap-3">
+				<a href="/admin/api/applications" 
+					class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-300 dark:ring-neutral-700 dark:hover:bg-neutral-700">
+					Cancel
+				</a>
+				<button type="submit"
+					class="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+					Save Changes
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<script>
+function regenerateKey(id) {
+	if (confirm('Are you sure you want to regenerate this API key? All applications using the current key will need to be updated.')) {
+		fetch(`/admin/api/applications/${id}/regenerate`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then(response => {
+			if (response.ok) {
+				window.location.reload();
+			} else {
+				showToast('Failed to regenerate API key', 'error');
+			}
+		});
+	}
+}
+</script>

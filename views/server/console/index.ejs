@@ -1,0 +1,189 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Server Console</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Manage and monitor your server through the console.</p>
+		</div>
+		<div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex gap-2">
+			<button onclick="startServer()" id="start-btn" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600">
+				Start Server
+			</button>
+			<button onclick="stopServer()" id="stop-btn" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600" disabled>
+				Stop Server
+			</button>
+			<button onclick="restartServer()" id="restart-btn" class="px-4 py-2 text-sm font-medium text-white bg-yellow-600 rounded-xl hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-600" disabled>
+				Restart Server
+			</button>
+		</div>
+	</div>
+
+	<!-- Server Stats -->
+	<div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+		<!-- CPU Usage -->
+		<div class="bg-white dark:bg-neutral-900 shadow-sm ring-1 ring-neutral-900/5 rounded-xl p-6">
+			<div class="flex items-center">
+				<div class="flex-shrink-0">
+					<svg class="h-6 w-6 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+					</svg>
+				</div>
+				<div class="ml-4">
+					<h3 class="text-sm font-medium text-neutral-900 dark:text-white">CPU Usage</h3>
+					<p id="cpu-usage" class="mt-1 text-2xl font-semibold text-neutral-700 dark:text-neutral-300">0%</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Memory Usage -->
+		<div class="bg-white dark:bg-neutral-900 shadow-sm ring-1 ring-neutral-900/5 rounded-xl p-6">
+			<div class="flex items-center">
+				<div class="flex-shrink-0">
+					<svg class="h-6 w-6 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+					</svg>
+				</div>
+				<div class="ml-4">
+					<h3 class="text-sm font-medium text-neutral-900 dark:text-white">Memory Usage</h3>
+					<p id="memory-usage" class="mt-1 text-2xl font-semibold text-neutral-700 dark:text-neutral-300">0 MB</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Uptime -->
+		<div class="bg-white dark:bg-neutral-900 shadow-sm ring-1 ring-neutral-900/5 rounded-xl p-6">
+			<div class="flex items-center">
+				<div class="flex-shrink-0">
+					<svg class="h-6 w-6 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+					</svg>
+				</div>
+				<div class="ml-4">
+					<h3 class="text-sm font-medium text-neutral-900 dark:text-white">Uptime</h3>
+					<p id="uptime" class="mt-1 text-2xl font-semibold text-neutral-700 dark:text-neutral-300">0:00:00</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Console Output -->
+	<div class="mt-6">
+		<div class="bg-neutral-900 rounded-xl p-4 h-96 overflow-auto font-mono text-sm">
+			<div id="console-output" class="text-neutral-300 whitespace-pre-wrap"></div>
+		</div>
+	</div>
+
+	<!-- Command Input -->
+	<div class="mt-4">
+		<form onsubmit="sendCommand(event)" class="flex gap-4">
+			<input type="text" id="command-input" 
+				class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+				placeholder="Enter command..."
+				disabled>
+			<button type="submit" id="send-command" 
+				class="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+				disabled>
+				Send
+			</button>
+		</form>
+	</div>
+</div>
+
+<script>
+let socket;
+let serverStatus = 'offline';
+let startTime = null;
+
+function updateButtons() {
+	document.getElementById('start-btn').disabled = serverStatus !== 'offline';
+	document.getElementById('stop-btn').disabled = serverStatus !== 'online';
+	document.getElementById('restart-btn').disabled = serverStatus !== 'online';
+	document.getElementById('command-input').disabled = serverStatus !== 'online';
+	document.getElementById('send-command').disabled = serverStatus !== 'online';
+}
+
+function connectWebSocket() {
+	socket = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/server/<%= server.id %>/console`);
+	
+	socket.onmessage = (event) => {
+		const data = JSON.parse(event.data);
+		
+		if (data.type === 'console') {
+			const consoleOutput = document.getElementById('console-output');
+			consoleOutput.innerHTML += `<div class="py-0.5">${data.line}</div>`;
+			consoleOutput.scrollTop = consoleOutput.scrollHeight;
+		} else if (data.type === 'stats') {
+			document.getElementById('cpu-usage').textContent = `${data.cpu}%`;
+			document.getElementById('memory-usage').textContent = `${Math.round(data.memory / 1024 / 1024)} MB`;
+			
+			if (data.status !== serverStatus) {
+				serverStatus = data.status;
+				updateButtons();
+				
+				if (serverStatus === 'online' && !startTime) {
+					startTime = new Date();
+				} else if (serverStatus !== 'online') {
+					startTime = null;
+				}
+			}
+		}
+	};
+
+	socket.onclose = () => {
+		setTimeout(connectWebSocket, 1000);
+	};
+}
+
+function startServer() {
+	fetch(`/server/<%= server.id %>/power`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ action: 'start' })
+	});
+}
+
+function stopServer() {
+	fetch(`/server/<%= server.id %>/power`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ action: 'stop' })
+	});
+}
+
+function restartServer() {
+	fetch(`/server/<%= server.id %>/power`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ action: 'restart' })
+	});
+}
+
+function sendCommand(event) {
+	event.preventDefault();
+	const input = document.getElementById('command-input');
+	const command = input.value.trim();
+	
+	if (command && socket.readyState === WebSocket.OPEN) {
+		socket.send(JSON.stringify({ type: 'command', command }));
+		input.value = '';
+	}
+}
+
+// Update uptime every second
+setInterval(() => {
+	if (startTime) {
+		const now = new Date();
+		const diff = Math.floor((now - startTime) / 1000);
+		const hours = Math.floor(diff / 3600);
+		const minutes = Math.floor((diff % 3600) / 60);
+		const seconds = diff % 60;
+		document.getElementById('uptime').textContent = 
+			`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+	}
+}, 1000);
+
+// Initialize WebSocket connection
+connectWebSocket();
+updateButtons();
+</script>

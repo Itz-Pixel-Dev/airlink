@@ -1,0 +1,117 @@
+<div class="theme-switcher">
+	<button id="theme-toggle" class="p-2 rounded-xl dark:text-white border border-neutral-700/20 dark:border-white/5 hover:scale-105 active:scale-95 duration-200 text-neutral-500 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm relative overflow-hidden">
+		<!-- Sun icon -->
+		<svg id="sun-icon" class="h-6 w-6 absolute transition-transform duration-500 ease-spring" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+		</svg>
+		<!-- Moon icon -->
+		<svg id="moon-icon" class="h-6 w-6 absolute transition-transform duration-500 ease-spring" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+		</svg>
+	</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const themeToggle = document.getElementById('theme-toggle');
+	const sunIcon = document.getElementById('sun-icon');
+	const moonIcon = document.getElementById('moon-icon');
+	const root = document.documentElement;
+
+	// Function to set theme with animation
+	const setTheme = (theme, animate = true) => {
+		const isDark = theme === 'dark';
+		
+		// Update theme class
+		if (isDark) {
+			root.classList.add('dark');
+		} else {
+			root.classList.remove('dark');
+		}
+
+		// Animate icons
+		if (animate) {
+			if (isDark) {
+				moonIcon.style.transform = 'translateY(100%) rotate(-45deg)';
+				sunIcon.style.transform = 'translateY(0) rotate(0)';
+			} else {
+				sunIcon.style.transform = 'translateY(-100%) rotate(45deg)';
+				moonIcon.style.transform = 'translateY(0) rotate(0)';
+			}
+		} else {
+			// Initial position without animation
+			if (isDark) {
+				moonIcon.style.transform = 'translateY(100%) rotate(-45deg)';
+				sunIcon.style.transform = 'translateY(0) rotate(0)';
+			} else {
+				sunIcon.style.transform = 'translateY(-100%) rotate(45deg)';
+				moonIcon.style.transform = 'translateY(0) rotate(0)';
+			}
+		}
+
+		localStorage.setItem('theme', theme);
+		
+		// Add transition class to body for smooth color transitions
+		document.body.classList.add('theme-transition');
+		setTimeout(() => {
+			document.body.classList.remove('theme-transition');
+		}, 500);
+	};
+
+	// Initialize theme
+	const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+	const savedTheme = localStorage.getItem('theme');
+	const initialTheme = savedTheme || (prefersDark.matches ? 'dark' : 'light');
+	setTheme(initialTheme, false);
+
+	// Toggle theme with animation
+	themeToggle.addEventListener('click', () => {
+		const currentTheme = root.classList.contains('dark') ? 'light' : 'dark';
+		setTheme(currentTheme);
+	});
+
+	// Listen for system theme changes
+	prefersDark.addEventListener('change', (e) => {
+		if (!localStorage.getItem('theme')) {
+			setTheme(e.matches ? 'dark' : 'light');
+		}
+	});
+});
+</script>
+
+<style>
+.theme-transition {
+	transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.ease-spring {
+	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#theme-toggle {
+	width: 40px;
+	height: 40px;
+}
+
+#sun-icon, #moon-icon {
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.dark #sun-icon {
+	transform: translateY(0) rotate(0);
+}
+
+.dark #moon-icon {
+	transform: translateY(100%) rotate(-45deg);
+}
+
+:not(.dark) #sun-icon {
+	transform: translateY(-100%) rotate(45deg);
+}
+
+:not(.dark) #moon-icon {
+	transform: translateY(0) rotate(0);
+}
+</style>

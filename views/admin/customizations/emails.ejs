@@ -1,0 +1,119 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Email Templates</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Customize email templates sent by the panel.</p>
+		</div>
+	</div>
+
+	<div class="mt-8 max-w-4xl">
+		<form action="/admin/customizations/emails" method="POST" class="space-y-6">
+			<!-- SMTP Settings -->
+			<div class="bg-white dark:bg-neutral-900 shadow-sm ring-1 ring-neutral-900/5 rounded-xl p-6">
+				<h2 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">SMTP Configuration</h2>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<!-- Host -->
+					<div>
+						<label for="smtp_host" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">SMTP Host</label>
+						<input type="text" name="smtp_host" id="smtp_host" value="<%= settings.smtp?.host %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<!-- Port -->
+					<div>
+						<label for="smtp_port" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">SMTP Port</label>
+						<input type="number" name="smtp_port" id="smtp_port" value="<%= settings.smtp?.port %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<!-- Username -->
+					<div>
+						<label for="smtp_user" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">SMTP Username</label>
+						<input type="text" name="smtp_user" id="smtp_user" value="<%= settings.smtp?.username %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<!-- Password -->
+					<div>
+						<label for="smtp_pass" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">SMTP Password</label>
+						<input type="password" name="smtp_pass" id="smtp_pass" value="<%= settings.smtp?.password %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<!-- From Email -->
+					<div>
+						<label for="smtp_from" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">From Email</label>
+						<input type="email" name="smtp_from" id="smtp_from" value="<%= settings.smtp?.from %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<!-- From Name -->
+					<div>
+						<label for="smtp_from_name" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">From Name</label>
+						<input type="text" name="smtp_from_name" id="smtp_from_name" value="<%= settings.smtp?.fromName %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+				</div>
+			</div>
+
+			<!-- Email Templates -->
+			<div class="bg-white dark:bg-neutral-900 shadow-sm ring-1 ring-neutral-900/5 rounded-xl p-6">
+				<h2 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Email Templates</h2>
+				
+				<!-- Welcome Email -->
+				<div class="mb-6">
+					<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Welcome Email</label>
+					<textarea name="welcome_email" rows="6"
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm font-mono"><%= settings.emails?.welcome %></textarea>
+					<p class="mt-2 text-sm text-neutral-500">Available variables: {{username}}, {{email}}, {{panel_url}}</p>
+				</div>
+
+				<!-- Password Reset -->
+				<div class="mb-6">
+					<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Password Reset Email</label>
+					<textarea name="reset_email" rows="6"
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm font-mono"><%= settings.emails?.reset %></textarea>
+					<p class="mt-2 text-sm text-neutral-500">Available variables: {{username}}, {{reset_url}}, {{expires_in}}</p>
+				</div>
+
+				<!-- Server Created -->
+				<div>
+					<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Server Created Email</label>
+					<textarea name="server_created_email" rows="6"
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm font-mono"><%= settings.emails?.serverCreated %></textarea>
+					<p class="mt-2 text-sm text-neutral-500">Available variables: {{username}}, {{server_name}}, {{server_url}}</p>
+				</div>
+			</div>
+
+			<div class="flex justify-end gap-3">
+				<button type="button" onclick="testEmail()"
+					class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-300 dark:ring-neutral-700 dark:hover:bg-neutral-700">
+					Send Test Email
+				</button>
+				<button type="submit"
+					class="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+					Save Changes
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<script>
+function testEmail() {
+	fetch('/admin/customizations/emails/test', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	}).then(response => {
+		if (response.ok) {
+			showToast('Test email sent successfully', 'success');
+		} else {
+			showToast('Failed to send test email', 'error');
+		}
+	});
+}
+</script>

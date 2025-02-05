@@ -1,0 +1,113 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Create Nest</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Create a new server nest to group related server configurations.</p>
+		</div>
+	</div>
+
+	<div class="mt-8 max-w-2xl">
+		<form action="/admin/nests" method="POST" class="space-y-6">
+			<!-- Nest Name -->
+			<div>
+				<label for="name" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Nest Name</label>
+				<div class="mt-1">
+					<input type="text" name="name" id="name" required
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+						placeholder="Minecraft Servers">
+				</div>
+				<p class="mt-2 text-sm text-neutral-500">A descriptive name for this nest.</p>
+			</div>
+
+			<!-- Description -->
+			<div>
+				<label for="description" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Description</label>
+				<div class="mt-1">
+					<textarea name="description" id="description" rows="3"
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+						placeholder="Minecraft server configurations and options..."></textarea>
+				</div>
+				<p class="mt-2 text-sm text-neutral-500">A brief description of what this nest contains.</p>
+			</div>
+
+			<!-- Variables -->
+			<div>
+				<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Environment Variables</label>
+				<div class="mt-4 space-y-4" id="variables-container">
+					<!-- Variable template will be cloned here -->
+				</div>
+				<button type="button" onclick="addVariable()" 
+					class="mt-4 inline-flex items-center px-3 py-1.5 text-sm font-medium text-neutral-700 bg-neutral-100 rounded-xl hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700">
+					<svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+					</svg>
+					Add Variable
+				</button>
+			</div>
+
+			<!-- Docker Image -->
+			<div>
+				<label for="docker_image" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Default Docker Image</label>
+				<div class="mt-1">
+					<input type="text" name="docker_image" id="docker_image" required
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+						placeholder="ghcr.io/pterodactyl/yolks:java_17">
+				</div>
+				<p class="mt-2 text-sm text-neutral-500">The default Docker image to use for servers in this nest.</p>
+			</div>
+
+			<div class="flex justify-end gap-3">
+				<a href="/admin/nests" 
+					class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-300 dark:ring-neutral-700 dark:hover:bg-neutral-700">
+					Cancel
+				</a>
+				<button type="submit"
+					class="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+					Create Nest
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- Variable Template (Hidden) -->
+<template id="variable-template">
+	<div class="variable-group grid grid-cols-3 gap-4">
+		<div>
+			<input type="text" name="var_names[]" placeholder="VARIABLE_NAME"
+				class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+		</div>
+		<div>
+			<input type="text" name="var_values[]" placeholder="Default Value"
+				class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+		</div>
+		<div class="flex items-center">
+			<button type="button" onclick="removeVariable(this)" class="text-red-600 hover:text-red-900">
+				<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+				</svg>
+			</button>
+		</div>
+	</div>
+</template>
+
+<script>
+function addVariable() {
+	const container = document.getElementById('variables-container');
+	const template = document.getElementById('variable-template');
+	const clone = template.content.cloneNode(true);
+	container.appendChild(clone);
+}
+
+function removeVariable(button) {
+	const variableGroup = button.closest('.variable-group');
+	variableGroup.remove();
+}
+
+// Add initial variable field
+document.addEventListener('DOMContentLoaded', () => {
+	addVariable();
+});
+</script>

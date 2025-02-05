@@ -1,0 +1,147 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Edit File</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">
+				<%= filePath %>
+			</p>
+		</div>
+		<div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex gap-2">
+			<button onclick="saveFile()" class="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				Save
+			</button>
+			<a href="/server/<%= server.id %>/files?path=<%= encodeURIComponent(directory) %>" 
+				class="px-4 py-2 text-sm font-medium text-neutral-700 bg-white rounded-xl border border-neutral-300 hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-700">
+				Cancel
+			</a>
+		</div>
+	</div>
+
+	<div class="mt-8">
+		<!-- Editor Controls -->
+		<div class="mb-4 flex items-center justify-between">
+			<div class="flex items-center space-x-4">
+				<!-- Font Size -->
+				<div>
+					<label for="font-size" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Font Size</label>
+					<select id="font-size" onchange="updateFontSize(this.value)"
+						class="mt-1 block w-24 rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+						<option value="12">12px</option>
+						<option value="14" selected>14px</option>
+						<option value="16">16px</option>
+						<option value="18">18px</option>
+						<option value="20">20px</option>
+					</select>
+				</div>
+
+				<!-- Word Wrap -->
+				<div class="flex items-center">
+					<input type="checkbox" id="word-wrap" onchange="toggleWordWrap()" checked
+						class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+					<label for="word-wrap" class="ml-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+						Word Wrap
+					</label>
+				</div>
+			</div>
+
+			<!-- File Info -->
+			<div class="text-sm text-neutral-500 dark:text-neutral-400">
+				<span id="file-size"><%= fileSize %></span> •
+				<span id="line-count">0 lines</span> •
+				<span id="cursor-position">Line 1, Column 1</span>
+			</div>
+		</div>
+
+		<!-- Editor -->
+		<div class="relative">
+			<div id="editor" class="h-[calc(100vh-20rem)] w-full rounded-xl border border-neutral-300 dark:border-neutral-700 font-mono text-sm"></div>
+		</div>
+	</div>
+</div>
+
+<!-- Load Monaco Editor -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
+<script>
+require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
+
+let editor;
+require(['vs/editor/editor.main'], function() {
+	// Initialize editor
+	editor = monaco.editor.create(document.getElementById('editor'), {
+		value: `<%= content.replace(/`/g, '\\`').replace(/\$/g, '\\$') %>`,
+		language: '<%= language %>',
+		theme: document.documentElement.classList.contains('dark') ? 'vs-dark' : 'vs',
+		automaticLayout: true,
+		minimap: { enabled: true },
+		scrollBeyondLastLine: false,
+		roundedSelection: true,
+		padding: { top: 16, bottom: 16 },
+		fontSize: 14,
+		wordWrap: 'on',
+		lineNumbers: 'on',
+		renderWhitespace: 'selection',
+		tabSize: 4,
+		insertSpaces: true
+	});
+
+	// Update line count and cursor position
+	function updateEditorInfo() {
+		const position = editor.getPosition();
+		const lineCount = editor.getModel().getLineCount();
+		document.getElementById('line-count').textContent = `${lineCount} lines`;
+		document.getElementById('cursor-position').textContent = `Line ${position.lineNumber}, Column ${position.column}`;
+	}
+
+	editor.onDidChangeCursorPosition(updateEditorInfo);
+	editor.onDidChangeModelContent(updateEditorInfo);
+	updateEditorInfo();
+
+	// Theme switcher support
+	const observer = new MutationObserver(mutations => {
+		mutations.forEach(mutation => {
+			if (mutation.attributeName === 'class') {
+				const isDark = document.documentElement.classList.contains('dark');
+				monaco.editor.setTheme(isDark ? 'vs-dark' : 'vs');
+			}
+		});
+	});
+	observer.observe(document.documentElement, { attributes: true });
+});
+
+function updateFontSize(size) {
+	editor.updateOptions({ fontSize: parseInt(size) });
+}
+
+function toggleWordWrap() {
+	const wordWrap = document.getElementById('word-wrap').checked;
+	editor.updateOptions({ wordWrap: wordWrap ? 'on' : 'off' });
+}
+
+function saveFile() {
+	const content = editor.getValue();
+	fetch(`/server/<%= server.id %>/files/save`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({
+			path: '<%= filePath %>',
+			content: content
+		})
+	}).then(response => {
+		if (response.ok) {
+			showToast('File saved successfully', 'success');
+		} else {
+			showToast('Failed to save file', 'error');
+		}
+	});
+}
+
+// Handle Ctrl+S
+document.addEventListener('keydown', function(e) {
+	if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+		e.preventDefault();
+		saveFile();
+	}
+});
+</script>

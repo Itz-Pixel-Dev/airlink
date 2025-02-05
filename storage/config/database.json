@@ -1,0 +1,22 @@
+{
+	"hosts": [
+		{
+			"id": "local",
+			"name": "Local MySQL",
+			"host": "localhost",
+			"port": 3306,
+			"type": "mysql"
+		},
+		{
+			"id": "remote",
+			"name": "Remote MySQL",
+			"host": "db.example.com",
+			"port": 3306,
+			"type": "mysql"
+		}
+	],
+	"defaults": {
+		"charset": "utf8mb4",
+		"collation": "utf8mb4_unicode_ci"
+	}
+}

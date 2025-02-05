@@ -1,0 +1,90 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Add Database Host</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Configure a new database host for server databases.</p>
+		</div>
+	</div>
+
+	<div class="mt-8 max-w-2xl">
+		<form action="/admin/database" method="POST" class="space-y-6">
+			<!-- Host Name -->
+			<div>
+				<label for="name" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Host Name</label>
+				<div class="mt-1">
+					<input type="text" name="name" id="name" required
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+						placeholder="Primary Database">
+				</div>
+				<p class="mt-2 text-sm text-neutral-500">A descriptive name for this database host.</p>
+			</div>
+
+			<!-- Host Address -->
+			<div>
+				<label for="host" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Host Address</label>
+				<div class="mt-1">
+					<input type="text" name="host" id="host" required
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+						placeholder="127.0.0.1">
+				</div>
+				<p class="mt-2 text-sm text-neutral-500">The IP address or hostname of the database server.</p>
+			</div>
+
+			<!-- Port -->
+			<div>
+				<label for="port" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Port</label>
+				<div class="mt-1">
+					<input type="number" name="port" id="port" required
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+						value="3306">
+				</div>
+				<p class="mt-2 text-sm text-neutral-500">The port your database server is running on.</p>
+			</div>
+
+			<!-- Username -->
+			<div>
+				<label for="username" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Username</label>
+				<div class="mt-1">
+					<input type="text" name="username" id="username" required
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+						placeholder="root">
+				</div>
+			</div>
+
+			<!-- Password -->
+			<div>
+				<label for="password" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Password</label>
+				<div class="mt-1">
+					<input type="password" name="password" id="password" required
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+				</div>
+			</div>
+
+			<!-- Database Type -->
+			<div>
+				<label for="type" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Database Type</label>
+				<div class="mt-1">
+					<select name="type" id="type" required
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+						<option value="mysql">MySQL</option>
+						<option value="mariadb">MariaDB</option>
+						<option value="postgres">PostgreSQL</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="flex justify-end gap-3">
+				<a href="/admin/database" 
+					class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-300 dark:ring-neutral-700 dark:hover:bg-neutral-700">
+					Cancel
+				</a>
+				<button type="submit"
+					class="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+					Add Database Host
+				</button>
+			</div>
+		</form>
+	</div>
+</div>

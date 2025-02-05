@@ -1,0 +1,106 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">API Settings</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Configure API access and rate limiting settings.</p>
+		</div>
+	</div>
+
+	<form onsubmit="saveSettings(event)" class="mt-8 space-y-8">
+		<!-- Rate Limiting -->
+		<div class="bg-white dark:bg-neutral-900 shadow sm:rounded-xl">
+			<div class="px-4 py-5 sm:p-6">
+				<h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-white">Rate Limiting</h3>
+				<div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+					<div class="sm:col-span-3">
+						<label for="rate_limit" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Requests per Minute</label>
+						<input type="number" id="rate_limit" name="rate_limit" value="<%= settings.rate_limit %>" min="10" max="1000"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<div class="sm:col-span-3">
+						<label for="rate_limit_window" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Window Size (minutes)</label>
+						<input type="number" id="rate_limit_window" name="rate_limit_window" value="<%= settings.rate_limit_window %>" min="1" max="60"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Access Control -->
+		<div class="bg-white dark:bg-neutral-900 shadow sm:rounded-xl">
+			<div class="px-4 py-5 sm:p-6">
+				<h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-white">Access Control</h3>
+				<div class="mt-6 space-y-6">
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" id="require_authentication" name="require_authentication" <%= settings.require_authentication ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label for="require_authentication" class="font-medium text-neutral-700 dark:text-neutral-300">Require Authentication</label>
+							<p class="text-neutral-500 dark:text-neutral-400">All API endpoints require authentication.</p>
+						</div>
+					</div>
+
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" id="allow_cors" name="allow_cors" <%= settings.allow_cors ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label for="allow_cors" class="font-medium text-neutral-700 dark:text-neutral-300">Allow CORS</label>
+							<p class="text-neutral-500 dark:text-neutral-400">Enable Cross-Origin Resource Sharing.</p>
+						</div>
+					</div>
+
+					<div id="cors_origins" class="<%= settings.allow_cors ? '' : 'hidden' %>">
+						<label for="allowed_origins" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Allowed Origins</label>
+						<textarea id="allowed_origins" name="allowed_origins" rows="3"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+							placeholder="https://example.com&#10;https://api.example.com"><%= settings.allowed_origins %></textarea>
+						<p class="mt-1 text-sm text-neutral-500">One origin per line</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="flex justify-end">
+			<button type="submit" class="ml-3 inline-flex justify-center rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				Save Changes
+			</button>
+		</div>
+	</form>
+</div>
+
+<script>
+document.getElementById('allow_cors').addEventListener('change', function() {
+	document.getElementById('cors_origins').classList.toggle('hidden', !this.checked);
+});
+
+function saveSettings(event) {
+	event.preventDefault();
+	
+	const data = {
+		rate_limit: document.getElementById('rate_limit').value,
+		rate_limit_window: document.getElementById('rate_limit_window').value,
+		require_authentication: document.getElementById('require_authentication').checked,
+		allow_cors: document.getElementById('allow_cors').checked,
+		allowed_origins: document.getElementById('allowed_origins').value
+	};
+
+	fetch('/admin/settings/api', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	}).then(response => {
+		if (response.ok) {
+			showToast('Settings saved successfully', 'success');
+		} else {
+			showToast('Failed to save settings', 'error');
+		}
+	});
+}
+</script>

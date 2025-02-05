@@ -1,0 +1,85 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Role Management</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Manage user roles and their associated permissions.</p>
+		</div>
+		<div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+			<a href="/admin/roles/create" class="block px-4 py-2 text-sm font-medium text-center text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				Create Role
+			</a>
+		</div>
+	</div>
+
+	<div class="mt-8 flow-root">
+		<div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+			<div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+				<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-xl">
+					<table class="min-w-full divide-y divide-neutral-300 dark:divide-neutral-700">
+						<thead class="bg-neutral-50 dark:bg-neutral-900">
+							<tr>
+								<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-neutral-900 dark:text-white sm:pl-6">Role Name</th>
+								<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Description</th>
+								<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Users</th>
+								<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white">Level</th>
+								<th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+									<span class="sr-only">Actions</span>
+								</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-neutral-200 dark:divide-neutral-800 bg-white dark:bg-neutral-900">
+							<% roles.forEach(role => { %>
+							<tr>
+								<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-neutral-900 dark:text-white sm:pl-6">
+									<div class="flex items-center">
+										<span class="h-2.5 w-2.5 rounded-full <%= role.color %> mr-2"></span>
+										<%= role.name %>
+									</div>
+								</td>
+								<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+									<%= role.description %>
+								</td>
+								<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+									<span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+										<%= role.userCount %> users
+									</span>
+								</td>
+								<td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+									<%= role.level %>
+								</td>
+								<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+									<a href="/admin/roles/<%= role.id %>/edit" class="text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white mr-4">Edit</a>
+									<% if (!role.isProtected) { %>
+										<button onclick="deleteRole('<%= role.id %>')" class="text-red-600 hover:text-red-900 dark:hover:text-red-400">Delete</button>
+									<% } %>
+								</td>
+							</tr>
+							<% }) %>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+function deleteRole(id) {
+	if (confirm('Are you sure you want to delete this role? Users with this role will be assigned the default role.')) {
+		fetch(`/admin/roles/${id}`, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then(response => {
+			if (response.ok) {
+				window.location.reload();
+			} else {
+				showToast('Failed to delete role', 'error');
+			}
+		});
+	}
+}
+</script>

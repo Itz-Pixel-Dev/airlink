@@ -1,0 +1,82 @@
+<%- include('../../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Create API Client</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Create a new API client for external application access.</p>
+		</div>
+	</div>
+
+	<form onsubmit="createClient(event)" class="mt-8 space-y-6">
+		<div class="space-y-4">
+			<!-- Client Name -->
+			<div>
+				<label for="name" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Client Name</label>
+				<input type="text" id="name" name="name" required
+					class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+					placeholder="My Application">
+			</div>
+
+			<!-- Description -->
+			<div>
+				<label for="description" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Description</label>
+				<textarea id="description" name="description" rows="3"
+					class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+					placeholder="Brief description of this API client"></textarea>
+			</div>
+
+			<!-- Permissions -->
+			<div>
+				<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Permissions</label>
+				<div class="mt-2 space-y-2">
+					<% permissions.forEach(permission => { %>
+					<div class="flex items-center">
+						<input type="checkbox" id="<%= permission.id %>" name="permissions[]" value="<%= permission.id %>"
+							class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						<label for="<%= permission.id %>" class="ml-2 text-sm text-neutral-700 dark:text-neutral-300">
+							<%= permission.name %>
+						</label>
+					</div>
+					<% }) %>
+				</div>
+			</div>
+		</div>
+
+		<div class="flex justify-end space-x-3">
+			<a href="/admin/api/clients" class="px-4 py-2 text-sm font-medium text-neutral-700 bg-white rounded-xl border border-neutral-300 hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-700">
+				Cancel
+			</a>
+			<button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				Create Client
+			</button>
+		</div>
+	</form>
+</div>
+
+<script>
+function createClient(event) {
+	event.preventDefault();
+	
+	const permissions = Array.from(document.querySelectorAll('input[name="permissions[]"]:checked'))
+		.map(checkbox => checkbox.value);
+
+	const data = {
+		name: document.getElementById('name').value,
+		description: document.getElementById('description').value,
+		permissions: permissions
+	};
+
+	fetch('/admin/api/clients', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	}).then(response => {
+		if (response.ok) {
+			window.location.href = '/admin/api/clients';
+		} else {
+			showToast('Failed to create API client', 'error');
+		}
+	});
+}
+</script>

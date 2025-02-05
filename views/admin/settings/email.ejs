@@ -1,0 +1,138 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Email Settings</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Configure email server settings and notification preferences.</p>
+		</div>
+		<div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+			<button onclick="testEmailSettings()" class="block px-4 py-2 text-sm font-medium text-center text-white bg-neutral-900 rounded-xl hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				Test Settings
+			</button>
+		</div>
+	</div>
+
+	<form onsubmit="saveSettings(event)" class="mt-8 space-y-8">
+		<!-- SMTP Settings -->
+		<div class="bg-white dark:bg-neutral-900 shadow sm:rounded-xl">
+			<div class="px-4 py-5 sm:p-6">
+				<h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-white">SMTP Settings</h3>
+				<div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+					<div class="sm:col-span-3">
+						<label for="smtp_host" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">SMTP Host</label>
+						<input type="text" id="smtp_host" name="smtp_host" value="<%= settings.smtp_host %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<div class="sm:col-span-3">
+						<label for="smtp_port" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">SMTP Port</label>
+						<input type="number" id="smtp_port" name="smtp_port" value="<%= settings.smtp_port %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<div class="sm:col-span-3">
+						<label for="smtp_username" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">SMTP Username</label>
+						<input type="text" id="smtp_username" name="smtp_username" value="<%= settings.smtp_username %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<div class="sm:col-span-3">
+						<label for="smtp_password" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">SMTP Password</label>
+						<input type="password" id="smtp_password" name="smtp_password" value="<%= settings.smtp_password %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<div class="sm:col-span-3">
+						<label for="from_address" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">From Address</label>
+						<input type="email" id="from_address" name="from_address" value="<%= settings.from_address %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<div class="sm:col-span-3">
+						<label for="from_name" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">From Name</label>
+						<input type="text" id="from_name" name="from_name" value="<%= settings.from_name %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Email Notifications -->
+		<div class="bg-white dark:bg-neutral-900 shadow sm:rounded-xl">
+			<div class="px-4 py-5 sm:p-6">
+				<h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-white">Email Notifications</h3>
+				<div class="mt-6 space-y-6">
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" id="notify_server_down" name="notify_server_down" <%= settings.notify_server_down ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label for="notify_server_down" class="font-medium text-neutral-700 dark:text-neutral-300">Server Down Notifications</label>
+							<p class="text-neutral-500 dark:text-neutral-400">Send email notifications when a server goes offline.</p>
+						</div>
+					</div>
+
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" id="notify_backup_complete" name="notify_backup_complete" <%= settings.notify_backup_complete ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label for="notify_backup_complete" class="font-medium text-neutral-700 dark:text-neutral-300">Backup Notifications</label>
+							<p class="text-neutral-500 dark:text-neutral-400">Send email notifications when server backups complete.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="flex justify-end">
+			<button type="submit" class="ml-3 inline-flex justify-center rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				Save Changes
+			</button>
+		</div>
+	</form>
+</div>
+
+<script>
+function saveSettings(event) {
+	event.preventDefault();
+	
+	const data = {
+		smtp_host: document.getElementById('smtp_host').value,
+		smtp_port: document.getElementById('smtp_port').value,
+		smtp_username: document.getElementById('smtp_username').value,
+		smtp_password: document.getElementById('smtp_password').value,
+		from_address: document.getElementById('from_address').value,
+		from_name: document.getElementById('from_name').value,
+		notify_server_down: document.getElementById('notify_server_down').checked,
+		notify_backup_complete: document.getElementById('notify_backup_complete').checked
+	};
+
+	fetch('/admin/settings/email', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	}).then(response => {
+		if (response.ok) {
+			showToast('Settings saved successfully', 'success');
+		} else {
+			showToast('Failed to save settings', 'error');
+		}
+	});
+}
+
+function testEmailSettings() {
+	fetch('/admin/settings/email/test', {
+		method: 'POST'
+	}).then(response => {
+		if (response.ok) {
+			showToast('Test email sent successfully', 'success');
+		} else {
+			showToast('Failed to send test email', 'error');
+		}
+	});
+}
+</script>

@@ -1,0 +1,125 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Create Role</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Create a new role with specific permissions.</p>
+		</div>
+	</div>
+
+	<div class="mt-8 max-w-2xl">
+		<form action="/admin/roles" method="POST" class="space-y-6">
+			<!-- Role Name -->
+			<div>
+				<label for="name" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Role Name</label>
+				<div class="mt-1">
+					<input type="text" name="name" id="name" required
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+						placeholder="Administrator">
+				</div>
+			</div>
+
+			<!-- Description -->
+			<div>
+				<label for="description" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Description</label>
+				<div class="mt-1">
+					<textarea name="description" id="description" rows="3"
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+						placeholder="Role description..."></textarea>
+				</div>
+			</div>
+
+			<!-- Color -->
+			<div>
+				<label for="color" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Role Color</label>
+				<div class="mt-1">
+					<input type="color" name="color" id="color"
+						class="block rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 sm:text-sm"
+						value="#4F46E5">
+				</div>
+			</div>
+
+			<!-- Level -->
+			<div>
+				<label for="level" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Role Level</label>
+				<div class="mt-1">
+					<input type="number" name="level" id="level" required min="0" max="100"
+						class="block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"
+						value="0">
+				</div>
+				<p class="mt-2 text-sm text-neutral-500">Higher levels have more permissions. Admin is 100.</p>
+			</div>
+
+			<!-- Permissions -->
+			<div>
+				<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-4">Permissions</label>
+				
+				<!-- Server Management -->
+				<div class="space-y-4 mb-6">
+					<h3 class="text-sm font-medium text-neutral-900 dark:text-white">Server Management</h3>
+					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+						<div class="flex items-start">
+							<div class="flex h-5 items-center">
+								<input type="checkbox" name="permissions[]" value="server.create"
+									class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+							</div>
+							<div class="ml-3 text-sm">
+								<label class="font-medium text-neutral-700 dark:text-neutral-300">Create Servers</label>
+								<p class="text-neutral-500">Can create new servers</p>
+							</div>
+						</div>
+						<div class="flex items-start">
+							<div class="flex h-5 items-center">
+								<input type="checkbox" name="permissions[]" value="server.delete"
+									class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+							</div>
+							<div class="ml-3 text-sm">
+								<label class="font-medium text-neutral-700 dark:text-neutral-300">Delete Servers</label>
+								<p class="text-neutral-500">Can delete existing servers</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- User Management -->
+				<div class="space-y-4 mb-6">
+					<h3 class="text-sm font-medium text-neutral-900 dark:text-white">User Management</h3>
+					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+						<div class="flex items-start">
+							<div class="flex h-5 items-center">
+								<input type="checkbox" name="permissions[]" value="user.manage"
+									class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+							</div>
+							<div class="ml-3 text-sm">
+								<label class="font-medium text-neutral-700 dark:text-neutral-300">Manage Users</label>
+								<p class="text-neutral-500">Can manage user accounts</p>
+							</div>
+						</div>
+						<div class="flex items-start">
+							<div class="flex h-5 items-center">
+								<input type="checkbox" name="permissions[]" value="role.manage"
+									class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+							</div>
+							<div class="ml-3 text-sm">
+								<label class="font-medium text-neutral-700 dark:text-neutral-300">Manage Roles</label>
+								<p class="text-neutral-500">Can manage roles and permissions</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="flex justify-end gap-3">
+				<a href="/admin/roles" 
+					class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-300 dark:ring-neutral-700 dark:hover:bg-neutral-700">
+					Cancel
+				</a>
+				<button type="submit"
+					class="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+					Create Role
+				</button>
+			</div>
+		</form>
+	</div>
+</div>

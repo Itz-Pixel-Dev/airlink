@@ -1,0 +1,104 @@
+<%- include('../../components/template') %>
+
+<div class="p-4 sm:p-6 lg:p-8">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Core Settings</h1>
+			<p class="mt-2 text-sm text-neutral-700 dark:text-neutral-400">Configure core system settings and preferences.</p>
+		</div>
+	</div>
+
+	<form onsubmit="saveSettings(event)" class="mt-8 space-y-8">
+		<!-- General Settings -->
+		<div class="bg-white dark:bg-neutral-900 shadow sm:rounded-xl">
+			<div class="px-4 py-5 sm:p-6">
+				<h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-white">General Settings</h3>
+				<div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+					<div class="sm:col-span-3">
+						<label for="company_name" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Company Name</label>
+						<input type="text" id="company_name" name="company_name" value="<%= settings.company_name %>"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+					</div>
+
+					<div class="sm:col-span-3">
+						<label for="timezone" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Default Timezone</label>
+						<select id="timezone" name="timezone"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm">
+							<% timezones.forEach(tz => { %>
+								<option value="<%= tz.value %>" <%= settings.timezone === tz.value ? 'selected' : '' %>><%= tz.label %></option>
+							<% }) %>
+						</select>
+					</div>
+
+					<div class="sm:col-span-6">
+						<label for="maintenance_message" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Maintenance Message</label>
+						<textarea id="maintenance_message" name="maintenance_message" rows="3"
+							class="mt-1 block w-full rounded-xl border-neutral-300 shadow-sm focus:border-neutral-500 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white sm:text-sm"><%= settings.maintenance_message %></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- System Settings -->
+		<div class="bg-white dark:bg-neutral-900 shadow sm:rounded-xl">
+			<div class="px-4 py-5 sm:p-6">
+				<h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-white">System Settings</h3>
+				<div class="mt-6 space-y-6">
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" id="maintenance_mode" name="maintenance_mode" <%= settings.maintenance_mode ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label for="maintenance_mode" class="font-medium text-neutral-700 dark:text-neutral-300">Maintenance Mode</label>
+							<p class="text-neutral-500 dark:text-neutral-400">Enable maintenance mode to prevent user access during system updates.</p>
+						</div>
+					</div>
+
+					<div class="flex items-start">
+						<div class="flex h-5 items-center">
+							<input type="checkbox" id="registration_enabled" name="registration_enabled" <%= settings.registration_enabled ? 'checked' : '' %>
+								class="h-4 w-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500 dark:border-neutral-700 dark:bg-neutral-800">
+						</div>
+						<div class="ml-3 text-sm">
+							<label for="registration_enabled" class="font-medium text-neutral-700 dark:text-neutral-300">Enable Registration</label>
+							<p class="text-neutral-500 dark:text-neutral-400">Allow new users to register accounts.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="flex justify-end">
+			<button type="submit" class="ml-3 inline-flex justify-center rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+				Save Changes
+			</button>
+		</div>
+	</form>
+</div>
+
+<script>
+function saveSettings(event) {
+	event.preventDefault();
+	
+	const data = {
+		company_name: document.getElementById('company_name').value,
+		timezone: document.getElementById('timezone').value,
+		maintenance_message: document.getElementById('maintenance_message').value,
+		maintenance_mode: document.getElementById('maintenance_mode').checked,
+		registration_enabled: document.getElementById('registration_enabled').checked
+	};
+
+	fetch('/admin/settings/core', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	}).then(response => {
+		if (response.ok) {
+			showToast('Settings saved successfully', 'success');
+		} else {
+			showToast('Failed to save settings', 'error');
+		}
+	});
+}
+</script>
