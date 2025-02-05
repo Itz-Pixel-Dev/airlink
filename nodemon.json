@@ -1,5 +1,6 @@
 {
     "watch": ["src"],
-    "ext": "ts",
-    "exec": "npm run build-ts && npm run start" 
+    "ext": ".ts,.js",
+    "ignore": [],
+    "exec": "node --experimental-modules --loader ts-node/esm src/app.ts"
 }
