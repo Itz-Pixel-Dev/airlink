@@ -5,8 +5,10 @@ import logger from '../../../handlers/logger';
 import axios from 'axios';
 import { Buffer } from 'buffer';
 import QueueHandler from '../../../handlers/utils/core/queueer';
+import { safeParseJSON, safeStringifyJSON } from '../../../utils/json';
 
 const queueer = new QueueHandler();
+
 
 const prisma = new PrismaClient();
 
@@ -390,7 +392,7 @@ const coreModule: Module = {
               Memory: parseInt(Memory) || 4,
               Cpu: parseInt(Cpu) || 2,
               Storage: parseInt(Storage) || 20,
-              Variables: JSON.stringify(variables) || '[]',
+                Variables: safeStringifyJSON(variables, '[]'),
               StartCommand,
               dockerImage: JSON.stringify(imageDocker),
             },
@@ -408,28 +410,15 @@ const coreModule: Module = {
             });
       
             for (const server of servers) {
-              if (!server.Variables) {
+                if (!server.Variables) {
                 await prisma.server.update({
                   where: { id: server.id },
-                  data: { Installing: false },
+                  data: { Variables: '[]' }
                 });
-                continue;
-              }
-      
-              let ServerEnv;
-              try {
-                ServerEnv = JSON.parse(server.Variables);
-              } catch (error) {
-                console.error(
-                  `Error parsing Variables for server ID ${server.id}:`,
-                  error,
-                );
-                await prisma.server.update({
-                  where: { id: server.id },
-                  data: { Installing: false },
-                });
-                continue;
-              }
+                }
+
+                let ServerEnv = safeParseJSON(server.Variables, []);
+
       
               if (!Array.isArray(ServerEnv)) {
                 console.error(
@@ -454,20 +443,8 @@ const coreModule: Module = {
               );
       
               if (server.image?.scripts) {
-                let scripts;
-                try {
-                  scripts = JSON.parse(server.image.scripts);
-                } catch (error) {
-                  console.error(
-                    `Error parsing scripts for server ID ${server.id}:`,
-                    error,
-                  );
-                  await prisma.server.update({
-                    where: { id: server.id },
-                    data: { Installing: false },
-                  });
-                  continue;
-                }
+                const scripts = safeParseJSON(server.image?.scripts, { install: [] });
+
       
                 const requestBody = {
                   id: server.UUID,

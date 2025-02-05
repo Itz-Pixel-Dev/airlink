@@ -1,8 +1,10 @@
 import { createInterface } from 'readline';
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
+import { safeStringifyJSON } from '../../utils/json';
 
 const IMAGES_URL =
+
   'https://raw.githubusercontent.com/airlinklabs/images/refs/heads/main/index.json';
 const FIELD_MAPPING: Record<string, string> = {
   docker_images: 'dockerImages',
@@ -15,11 +17,11 @@ const rl = createInterface({
 });
 
 interface ImageData {
-  meta: Record<string, any>;
-  dockerImages: Record<string, any>;
-  info: Record<string, any>;
-  scripts: Record<string, any>;
-  variables: Record<string, any>;
+  meta: string;
+  dockerImages: string;
+  info: string;
+  scripts: string;
+  variables: string;
   [key: string]: any;
 }
 
@@ -44,19 +46,22 @@ class Seeder {
 
   private stringifyJsonFields(image: Record<string, any>): Record<string, any> {
     const jsonFields = ['meta', 'dockerImages', 'info', 'scripts', 'variables'];
+    const result = { ...image };
 
-    if (!image.dockerImages && image.docker_images) {
-      image.dockerImages = image.docker_images;
-    } else if (!image.dockerImages) {
-      image.dockerImages = {};
+    // Handle the docker_images to dockerImages conversion first
+    if (!result.dockerImages && result.docker_images) {
+      result.dockerImages = result.docker_images;
+    } else if (!result.dockerImages) {
+      result.dockerImages = {};
     }
-
-    return {
-      ...image,
-      ...Object.fromEntries(
-        jsonFields.map((field) => [field, JSON.stringify(image[field])]),
-      ),
-    };
+    
+    for (const field of jsonFields) {
+      if (result[field]) {
+        result[field] = safeStringifyJSON(result[field]);
+      }
+    }
+    
+    return result;
   }
 
   private async fetchImageData(url: string): Promise<ImageData | null> {

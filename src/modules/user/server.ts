@@ -4,6 +4,7 @@ import { isAuthenticated, isAuthenticatedForServer } from '../../middleware/auth
 import { logger } from '../../utils/logger';
 import { checkEulaStatus, isWorld } from '../../handlers/features';
 import * as minecraftStatus from 'minecraft-status';
+import { safeParseJSON, safeStringifyJSON } from '../../utils/json';
 
 interface ErrorMessage {
   [key: string]: string;
@@ -29,6 +30,19 @@ interface ServerVariable {
   type: 'boolean' | 'text' | 'number';
   default: string | number | boolean;
   value: string | number | boolean;
+}
+
+// Helper function for handling server variables
+function parseServerVariables(server: any): ServerVariable[] {
+  return safeParseJSON<ServerVariable[]>(server.Variables, []);
+}
+
+// Helper function for handling server info
+function parseServerInfo(server: any): ServerImageInfo {
+  const info = typeof server.image?.info === 'string' 
+    ? safeParseJSON<ServerImageInfo>(server.image.info, { features: [], stop: '' })
+    : server.image?.info || { features: [], stop: '' };
+  return info;
 }
 
 const prisma = new PrismaClient();

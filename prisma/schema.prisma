@@ -53,7 +53,7 @@ model Server {
   Memory       Int
   Cpu          Int
   Storage      Int
-  Variables    Json?
+  Variables    String?
   StartCommand String?
   dockerImage  String?
   Installing   Boolean    @default(true)
@@ -80,12 +80,12 @@ model Images {
   authorName   String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  meta         Json?
+  meta         String?
   dockerImages String?
   startup      String?
   info         String?
-  scripts      Json?
-  variables    Json?
+  scripts      String?
+  variables    String?
   servers      Server[]
 
   @@index([UUID])
@@ -128,7 +128,7 @@ model ApiKey {
   name        String
   userId      Int
   user        Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  permissions Json?
+  permissions String?
   lastUsedAt  DateTime?
   expiresAt   DateTime?
   createdAt   DateTime @default(now())
