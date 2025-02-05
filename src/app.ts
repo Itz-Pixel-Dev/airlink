@@ -1,17 +1,9 @@
-/**
- * ╳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╳
- *      AirLink - Open Source Project by AirlinkLabs
- *      Repository: https://github.com/airlinklabs/airlink
- *
- *     © 2024 AirlinkLabs. Licensed under the MIT License
- * ╳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╳
- */
-
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import session from 'express-session';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import cors from 'cors';
 import { loadEnv } from './handlers/envLoader';
 import { databaseLoader } from './handlers/databaseLoader';
 import { loadModules } from './handlers/modulesLoader';
@@ -24,45 +16,64 @@ import { translationMiddleware } from './handlers/utils/core/translation';
 import PrismaSessionStore from './handlers/sessionStore';
 import { settingsLoader } from './handlers/settingsLoader';
 import { loadPlugins } from './handlers/pluginHandler';
+import { createClient } from 'redis';
+import { promisify } from 'util';
 
 loadEnv();
-
-// Set max listeners
-process.setMaxListeners(20);
 
 const app = express();
 const port = process.env.PORT || 3000;
 const name = process.env.NAME || 'AirLink';
 const airlinkVersion = config.meta.version;
 
+// Trust proxy if enabled
+if (process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', 1);
+}
+
 // Security middleware
 app.use(helmet({
-  contentSecurityPolicy: {
+  contentSecurityPolicy: process.env.CSP_ENABLED === 'true' ? {
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "wss:", "https:"],
     },
-  },
+  } : false,
   crossOriginEmbedderPolicy: false,
 }));
+
+// CORS configuration
+if (process.env.CORS_ENABLED === 'true') {
+  const corsOptions = {
+    origin: process.env.CORS_ORIGINS?.split(',') || false,
+    credentials: true,
+    optionsSuccessStatus: 200
+  };
+  app.use(cors(corsOptions));
+}
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: (parseInt(process.env.RATE_LIMIT_WINDOW) || 15) * 60 * 1000,
   max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
   message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use(limiter);
 
-// Load websocket with ping/pong
+// WebSocket setup with ping/pong
 const wsInstance = expressWs(app);
 wsInstance.getWss().on('connection', (ws: any) => {
   ws.isAlive = true;
   ws.on('pong', () => { ws.isAlive = true; });
 });
-setInterval(() => {
+
+// WebSocket heartbeat
+const wsHeartbeat = setInterval(() => {
   wsInstance.getWss().clients.forEach((ws: any) => {
     if (!ws.isAlive) return ws.terminate();
     ws.isAlive = false;
@@ -70,19 +81,23 @@ setInterval(() => {
   });
 }, 30000);
 
+// Cache setup
+let cache: any;
+if (process.env.CACHE_ENABLED === 'true') {
+  if (process.env.CACHE_DRIVER === 'redis') {
+    cache = createClient({
+      url: process.env.REDIS_URL,
+      password: process.env.REDIS_PASSWORD
+    });
+    cache.connect().catch(console.error);
+  }
+}
+
 // Static files with cache control
 app.use(express.static(path.join(__dirname, '../public'), {
   maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
   etag: true,
 }));
-
-// View engine setup
-app.set('views', path.join(__dirname, '../views'));
-app.set('view engine', 'ejs');
-app.set('trust proxy', 1);
-
-// Compression
-app.use(compression());
 
 // Session configuration
 app.use(session({
@@ -91,21 +106,28 @@ app.use(session({
   saveUninitialized: false,
   store: new PrismaSessionStore(),
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.COOKIE_SECURE === 'true',
     httpOnly: true,
-    sameSite: 'strict',
-    maxAge: 3600000 * 72,
+    sameSite: process.env.COOKIE_SAME_SITE as 'strict' | 'lax' | 'none' || 'strict',
+    maxAge: parseInt(process.env.COOKIE_MAX_AGE || '259200') * 1000,
   },
   name: 'airlink.sid',
 }));
 
-// Body parsers with limits
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+// Body parsers with configurable limits
+const maxSize = process.env.UPLOAD_MAX_SIZE ? `${process.env.UPLOAD_MAX_SIZE}mb` : '1mb';
+app.use(express.json({ limit: maxSize }));
+app.use(express.urlencoded({ extended: true, limit: maxSize }));
 app.use(cookieParser());
-
-// Custom middleware
+app.use(compression());
 app.use(translationMiddleware);
+
+// Health check endpoint
+if (process.env.ENABLE_HEALTH_CHECK === 'true') {
+  app.get(process.env.HEALTH_CHECK_PATH || '/health', (_req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+}
 
 // Locals middleware
 app.use((_req: Request, res: Response, next: NextFunction) => {
@@ -115,12 +137,11 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// 404 handler
+// Error handlers
 app.use((_req: Request, res: Response) => {
   res.status(404).render('errors/404');
 });
 
-// Error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   logger.error('Error:', {
     error: err.message,
@@ -129,16 +150,15 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     method: req.method,
   });
 
-  if (res.headersSent) {
-    return next(err);
-  }
+  if (res.headersSent) return next(err);
 
+  const statusCode = (err as any).status || 500;
   if (req.accepts('html')) {
-    res.status(500).render('errors/500', {
+    res.status(statusCode).render(`errors/${statusCode}`, {
       error: process.env.NODE_ENV === 'development' ? err : 'Internal Server Error',
     });
   } else {
-    res.status(500).json({
+    res.status(statusCode).json({
       error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error',
     });
   }
@@ -158,13 +178,18 @@ const initializeApp = async () => {
     });
 
     // Graceful shutdown
-    process.on('SIGTERM', () => {
-      logger.info('SIGTERM received. Shutting down gracefully...');
+    const shutdown = async () => {
+      logger.info('Shutting down gracefully...');
+      clearInterval(wsHeartbeat);
+      if (cache) await cache.disconnect();
       server.close(() => {
         logger.info('Server closed');
         process.exit(0);
       });
-    });
+    };
+
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
   } catch (err) {
     logger.error('Failed to initialize application:', err);
     process.exit(1);

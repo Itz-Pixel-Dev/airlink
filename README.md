@@ -120,9 +120,6 @@ Airlink Panel is an advanced, open-source game server management platform design
 - Maintain clean, readable code
 - Update documentation
 
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 🎨 Customization
 
@@ -140,7 +137,12 @@ Modify the theme colors and styles in:
 
 ## 🔧 Development
 
-[Previous development sections remain the same...]
+[nothing here for now...]
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
 
 <div align="center">
   Made with ❤️ by SSI
