@@ -1,7 +1,7 @@
-import { Router, Request, Response } from 'express';
-import { Module } from '../../handlers/moduleInit';
+import express from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { isAuthenticated } from '../../handlers/utils/auth/authUtil';
+import { isAdmin } from '../../middleware/auth';
 import { checkNodeStatus } from '../../handlers/utils/node/nodeStatus';
 import logger from '../../handlers/logger';
 
@@ -53,18 +53,16 @@ async function listNodes(res: Response) {
   }
 }
 
-const adminModule: Module = {
-  info: {
-    name: 'Admin Nodes Module',
-    description: 'This file is for admin functionality of the Nodes.',
-    version: '1.0.0',
-    moduleVersion: '1.0.0',
-    author: 'AirLinkLab',
-    license: 'MIT',
-  },
+export const info = {
+  name: 'Admin Nodes',
+  description: 'Node management for administrators',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
+};
 
-  router: () => {
-    const router = Router();
+export const router = () => {
+  const router = express.Router();
+
 
     router.get(
       '/admin/nodes',
@@ -396,4 +394,4 @@ process.on('SIGINT', async () => {
   process.exit();
 });
 
-export default adminModule;
+

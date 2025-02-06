@@ -14,17 +14,17 @@
     "build": "npm run build-ts && npm run build:css && npm run lint",
     "build-ts": "tsc",
     "build:css": "tailwindcss -i ./public/tw.conf -o ./public/styles.css",
-    "start": "node --experimental-modules dist/app.js",
+    "start": "node --experimental-modules --es-module-specifier-resolution=node dist/app.js",
     "start:dev": "nodemon",
     "watch-ts": "tsc -w",
     "watch-css": "tailwindcss -i ./public/tw.conf -o ./public/styles.css --watch",
     "lint": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "migrate:dev": "prisma migrate dev --name init && prisma generate",
     "migrate:deploy": "prisma migrate deploy && prisma generate",
-    "seed": "ts-node src/handlers/cmd/seed.ts",
+    "seed": "node --loader ts-node/esm src/handlers/cmd/seed.ts",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -43,7 +43,7 @@
     "minecraft-status": "^1.1.0",
     "multer": "^1.4.5-lts.1",
     "redis": "^4.6.13",
-    "ws": "^8.16.0"
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -52,7 +52,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/express-rate-limit": "^6.0.0",
-    "@types/express-session": "^1.17.10",
+    "@types/express-session": "^1.18.1",
     "@types/express-ws": "^3.0.4",
     "@types/fs-extra": "^11.0.4",
     "@types/helmet": "^4.0.0",
@@ -60,7 +60,7 @@
     "@types/multer": "^1.4.11",
     "@types/node": "^20.11.19",
     "@types/supertest": "^6.0.2",
-    "@types/ws": "^8.5.10",
+    "@types/ws": "^8.5.14",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
     "concurrently": "^8.2.2",

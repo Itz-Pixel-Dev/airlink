@@ -1,17 +1,18 @@
-import { Router, Request, Response } from 'express';
+import express from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export const info = {
-  name: 'Core Module',
-  description: 'Core application functionality',
+  name: 'Core',
+  description: 'Core functionality',
   version: '1.0.0',
   moduleVersion: '1.0.0'
 };
 
 export const router = () => {
-  const router = Router();
+  const router = express.Router();
 
   // Home page
   router.get('/', async (req: Request, res: Response) => {

@@ -1,24 +1,21 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { isAuthenticated } from '../../middleware/auth';
-
-export const info = {
-  name: 'Admin Settings Module',
-  description: 'System settings management',
-  version: '1.0.0'
-};
+import { isAdmin } from '../../middleware/auth';
+import logger from '../../handlers/logger';
 
 const prisma = new PrismaClient();
-const router = Router();
 
-// Admin check middleware
-const isAdmin = (req: Request, res: Response, next: NextFunction): void => {
-  if (req.session?.user?.isAdmin) {
-    next();
-    return;
-  }
-  res.status(403).render('errors/403');
+export const info = {
+  name: 'Admin Settings',
+  description: 'System settings management',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
 };
+
+export const router = () => {
+  const router = express.Router();
+
 
 // Settings routes
 router.get('/admin/settings', 
@@ -101,6 +98,5 @@ router.delete('/admin/settings/api/keys/:id', async (req: Request, res: Response
   }
 });
 
-export const settingsRouter = router;
+return router;
 
-export default { info, settingsRouter };

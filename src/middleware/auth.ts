@@ -1,8 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { Session } from 'express-session';
 import rateLimit from 'express-rate-limit';
 import logger from '../handlers/logger';
+
+interface AuthenticatedRequest extends Request {
+  session: Session & {
+    user?: {
+      id: number;
+      username: string;
+      isAdmin: boolean;
+    };
+    lastActivity?: number;
+  };
+}
 
 interface User {
   id: number;
@@ -36,7 +47,7 @@ export const loginRateLimiter = rateLimit({
 // Session activity checker
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
-export const checkSessionActivity = (req: Request, res: Response, next: NextFunction) => {
+export const checkSessionActivity = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (req.session?.lastActivity) {
     const now = Date.now();
     if (now - req.session.lastActivity > SESSION_TIMEOUT) {
@@ -51,7 +62,7 @@ export const checkSessionActivity = (req: Request, res: Response, next: NextFunc
 };
 
 export const isAuthenticated = () => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.session?.user) {
         return res.redirect('/auth/login');
@@ -90,7 +101,7 @@ export const isAuthenticated = () => {
 };
 
 export const isAdmin = () => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.session?.user?.isAdmin) {
       return res.status(403).render('errors/403');
     }
@@ -99,7 +110,7 @@ export const isAdmin = () => {
 };
 
 export const isAuthenticatedForServer = (serverIdParam: string) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.session?.user) {
         return res.redirect('/auth/login');
@@ -135,7 +146,7 @@ export const isAuthenticatedForServer = (serverIdParam: string) => {
 };
 
 // API authentication middleware
-export const apiAuth = async (req: Request, res: Response, next: NextFunction) => {
+export const apiAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const apiKey = req.headers['x-api-key'];
   
   if (!apiKey || typeof apiKey !== 'string') {

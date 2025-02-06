@@ -1,6 +1,10 @@
 import fs from 'fs';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { prisma } from '../../databaseLoader';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 interface DatabaseHost {
 	id: string;
@@ -19,7 +23,7 @@ interface DatabaseConfig {
 }
 
 export const getDatabaseConfig = (): DatabaseConfig => {
-  const configPath = path.join(__dirname, '../../../../storage/config/database.json');
+const configPath = join(dirname(dirname(dirname(dirname(__dirname)))), 'storage/config/database.json');
   const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
   return config;
 };

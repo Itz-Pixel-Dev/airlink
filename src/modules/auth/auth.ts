@@ -1,8 +1,19 @@
-import { Router, Request, Response } from 'express';
+import express, { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import { logger } from '../../utils/logger';
+import logger from '../../handlers/logger';
 import { loginRateLimiter } from '../../middleware/auth';
+
+interface AuthRequest extends Request {
+  session: {
+    user?: {
+      id: number;
+      username: string;
+      isAdmin: boolean;
+    };
+    lastActivity?: number;
+  };
+}
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -26,7 +37,7 @@ const validatePassword = (password: string): boolean => {
 };
 
 // Login route with rate limiting
-router.post('/auth/login', loginRateLimiter, async (req: Request, res: Response): Promise<void> => {
+router.post('/auth/login', loginRateLimiter, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
@@ -89,7 +100,7 @@ router.post('/auth/login', loginRateLimiter, async (req: Request, res: Response)
 });
 
 // Secure logout route
-router.post('/auth/logout', (req: Request, res: Response): void => {
+router.post('/auth/logout', (req: AuthRequest, res: Response): void => {
   const sessionID = req.session.id;
   req.session.destroy((err: Error | null) => {
     if (err) {

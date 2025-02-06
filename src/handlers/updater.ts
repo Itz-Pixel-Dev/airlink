@@ -1,8 +1,12 @@
 import axios from 'axios';
 import { execSync } from 'child_process';
 import fs from 'fs';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import logger from './logger';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 interface GithubRelease {
   tag_name: string;
@@ -26,7 +30,7 @@ export async function checkForUpdates(): Promise<{
   updateInfo?: string;
 }> {
   try {
-    const configPath = path.join(process.cwd(), 'storage', 'config.json');
+    const configPath = join(dirname(__dirname), '../storage/config.json');
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
     const currentVersion = config.meta.version;
     const isDev = process.env.NODE_ENV === 'development';
@@ -68,7 +72,7 @@ export async function checkForUpdates(): Promise<{
 
 export async function performUpdate(): Promise<boolean> {
   try {
-    const backupDir = path.join(process.cwd(), 'backup');
+    const backupDir = join(dirname(__dirname), '../backup');
     if (!fs.existsSync(backupDir)) {
       fs.mkdirSync(backupDir);
     }

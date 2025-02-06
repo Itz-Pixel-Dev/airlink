@@ -1,16 +1,20 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import logger from '../../logger';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 function loadTranslations(lang: string): Record<string, unknown> {
-  const langPath = path.join(
-    __dirname,
-    `../../../../storage/lang/${lang}/lang.json`,
+  const langPath = join(
+    dirname(dirname(dirname(dirname(__dirname)))),
+    `storage/lang/${lang}/lang.json`,
   );
-  const fallbackPath = path.join(
-    __dirname,
-    '../../../../storage/lang/en/lang.json',
+  const fallbackPath = join(
+    dirname(dirname(dirname(dirname(__dirname)))),
+    'storage/lang/en/lang.json',
   );
 
   try {

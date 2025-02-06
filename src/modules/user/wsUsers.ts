@@ -4,8 +4,13 @@ import { PrismaClient } from '@prisma/client';
 import { WebSocket } from 'ws';
 import logger from '../../handlers/logger';
 
-export const onlineUsers: Set<string> = new Set();
-export const userTimeouts: Map<string, NodeJS.Timeout> = new Map();
+interface WebSocketWithAlive extends WebSocket {
+  isAlive: boolean;
+}
+
+interface WSRequest extends Request {
+  ws: WebSocketWithAlive;
+}
 
 const prisma = new PrismaClient();
 
@@ -22,44 +27,34 @@ const wsUsersModule: Module = {
   router: () => {
     const router = Router();
 
-    router.ws('/online-check', async (ws: WebSocket, req: Request) => {
-      const userId = req.session?.user?.id;
-      if (!userId) {
-        ws.close();
-        return;
-      }
-
+    router.ws('/online-check', async (ws: WebSocketWithAlive, req: WSRequest) => {
+      ws.isAlive = true;
+      
       try {
+        const userId = req.session?.user?.id;
+        if (!userId) {
+          ws.close();
+          return;
+        }
+
         const user = await prisma.users.findUnique({ where: { id: userId } });
         if (!user || !user.username) {
           ws.close();
           return;
         }
 
-        const username = user.username;
-
-        if (onlineUsers.has(username)) {
-          const existingTimeout = userTimeouts.get(username);
-          if (existingTimeout) {
-            clearTimeout(existingTimeout);
-            userTimeouts.delete(username);
-          }
-        }
-
-        onlineUsers.add(username);
-
         ws.send(JSON.stringify({ online: true }));
 
-        ws.on('close', () => {
-          const timeout = setTimeout(() => {
-            onlineUsers.delete(username);
-            userTimeouts.delete(username);
-          }, 1000);
+        // Add ping/pong for connection health check
+        ws.on('pong', () => {
+          ws.isAlive = true;
+        });
 
-          userTimeouts.set(username, timeout);
+        ws.on('close', () => {
+          logger.info('WebSocket connection closed');
         });
       } catch (error) {
-        logger.error('Error fetching user:', error);
+        logger.error('Error in WebSocket connection:', error);
         ws.close();
       }
     });
@@ -74,3 +69,4 @@ process.on('SIGINT', async () => {
 });
 
 export default wsUsersModule;
+

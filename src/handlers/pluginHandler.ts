@@ -1,7 +1,11 @@
+import { Express, Router } from 'express';
 import fs from 'fs';
-import path from 'path';
-import express, { Express, Router } from 'express';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import logger from './logger';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 interface Plugin {
   name: string;
@@ -11,7 +15,7 @@ interface Plugin {
 }
 
 export function loadPlugins(app: Express) {
-  const pluginsDir = path.join(__dirname, '../../storage/plugins');
+  const pluginsDir = join(dirname(__dirname), '../storage/plugins');
   const pluginFiles = fs
     .readdirSync(pluginsDir)
     .filter((file) => file.endsWith('.addon'));
@@ -20,7 +24,7 @@ export function loadPlugins(app: Express) {
     logger.info(`---- Loadin ${pluginFiles.length} Plugins ----`);
 
     for (const file of pluginFiles) {
-      const filePath = path.join(pluginsDir, file);
+        const filePath = join(pluginsDir, file);
 
       try {
         const pluginData = fs.readFileSync(filePath, 'utf-8');

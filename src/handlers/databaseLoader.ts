@@ -8,14 +8,18 @@
  */
 
 import fs from 'fs';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import logger from './logger';
 import { PrismaClient } from '@prisma/client';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export const prisma = new PrismaClient();
 
 export const databaseLoader = async () => {
-  const dbPath = path.join(__dirname, '../../prisma/dev.db');
+  const dbPath = join(dirname(__dirname), '../prisma/dev.db');
 
   if (!fs.existsSync(dbPath)) {
     logger.error('databaseLoader', `Database not found at location: ${dbPath}`);

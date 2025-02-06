@@ -8,7 +8,11 @@
  */
 
 import fs from 'fs';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const colors = {
   reset: '\x1b[0m',
@@ -64,7 +68,7 @@ const logLevels = {
   },
 };
 
-const logsDir = path.join(process.cwd(), 'logs');
+const logsDir = join(dirname(__dirname), '../logs');
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
@@ -90,9 +94,9 @@ class Logger {
     const timestamp = this.getTimestamp();
     const consoleOutput = `${colors.gray}${timestamp}${colors.reset} ${color}${icon} ${bgColor}${colors.bright}${label}${colors.reset} ${color}${message}${colors.reset}`;
     const fileOutput = `[${timestamp}] ${label}: ${message}\n`;
-    const logFile = path.join(
+    const logFile = join(
       logsDir,
-      level === 'error' ? 'error.log' : 'combined.log',
+      level === 'error' ? 'error.log' : `${new Date().toISOString().split('T')[0]}.log`,
     );
     try {
       fs.appendFileSync(logFile, fileOutput);

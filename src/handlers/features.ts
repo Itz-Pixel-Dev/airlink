@@ -1,5 +1,9 @@
 import fs from 'fs';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Check if a directory is a Minecraft world
@@ -18,7 +22,7 @@ export const isWorld = (dirPath: string): boolean => {
  */
 export const checkEulaStatus = (serverPath: string): boolean => {
   try {
-    const eulaPath = path.join(serverPath, 'eula.txt');
+    const eulaPath = join(serverPath, 'eula.txt');
     if (!fs.existsSync(eulaPath)) {
       return false;
     }

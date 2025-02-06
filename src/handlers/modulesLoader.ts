@@ -7,21 +7,25 @@
  * ╳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╳
  */
 
-import express from 'express';
+import { Express } from 'express';
 import fs from 'fs';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import logger from './logger';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 export const loadModules = async (
-  app: express.Express,
+  app: Express,
   airlinkVersion: string,
 ) => {
-  const modulesDir = path.join(__dirname, '../modules');
+  const modulesDir = join(dirname(__dirname), 'modules');
 
   const getFilesRecursively = (dir: string): string[] => {
     const dirents = fs.readdirSync(dir, { withFileTypes: true });
     const files = dirents.flatMap((dirent) => {
-      const fullPath = path.join(dir, dirent.name);
+      const fullPath = join(dir, dirent.name);
       return dirent.isDirectory() ? getFilesRecursively(fullPath) : fullPath;
     });
     return files.filter((file) => file.endsWith('.js') || file.endsWith('.ts'));

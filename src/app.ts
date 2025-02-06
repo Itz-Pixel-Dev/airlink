@@ -1,14 +1,16 @@
-import express, { Request, Response, NextFunction } from 'express';
-import path from 'path';
+import express, { Express, Request, Response, NextFunction } from 'express';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import session from 'express-session';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
+import { PrismaClient } from '@prisma/client';
 import { loadEnv } from './handlers/envLoader';
 import { databaseLoader } from './handlers/databaseLoader';
 import { loadModules } from './handlers/modulesLoader';
 import logger from './handlers/logger';
-import config from '../storage/config.json';
+import config from '../storage/config.json' assert { type: 'json' };
 import cookieParser from 'cookie-parser';
 import expressWs from 'express-ws';
 import compression from 'compression';
@@ -17,11 +19,15 @@ import PrismaSessionStore from './handlers/sessionStore';
 import { settingsLoader } from './handlers/settingsLoader';
 import { loadPlugins } from './handlers/pluginHandler';
 import { createClient } from 'redis';
-import { promisify } from 'util';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 loadEnv();
 
-const app = express();
+const app: Express = express();
+
+const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
 const name = process.env.NAME || 'AirLink';
 const airlinkVersion = config.meta.version;
@@ -57,8 +63,8 @@ if (process.env.CORS_ENABLED === 'true') {
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: (parseInt(process.env.RATE_LIMIT_WINDOW) || 15) * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
+  windowMs: (parseInt(process.env.RATE_LIMIT_WINDOW || '15')) * 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_MAX || '100'),
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -94,7 +100,7 @@ if (process.env.CACHE_ENABLED === 'true') {
 }
 
 // Static files with cache control
-app.use(express.static(path.join(__dirname, '../public'), {
+app.use(express.static(join(dirname(__filename), '../public'), {
   maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
   etag: true,
 }));
