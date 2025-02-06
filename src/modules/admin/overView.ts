@@ -1,17 +1,22 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { isAuthenticated } from '../../middleware/auth';
-
-export const info = {
-  name: 'Admin Overview Module',
-  description: 'Admin overview and statistics',
-  version: '1.0.0'
-};
+import { isAdmin } from '../../middleware/auth';
+import logger from '../../handlers/logger';
 
 const prisma = new PrismaClient();
-const router = Router();
 
-// Admin check middleware
+export const info = {
+  name: 'Admin Overview',
+  description: 'Admin dashboard overview',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
+};
+
+export const router = () => {
+  const router = express.Router();
+
+  // Admin check middleware
 const isAdmin = (req: Request, res: Response, next: NextFunction): void => {
   if (req.session?.user?.isAdmin) {
     next();
@@ -40,8 +45,5 @@ router.get('/admin', isAuthenticated(), isAdmin, async (req: Request, res: Respo
   }
 });
 
-// Export the module
-export const adminModule = {
-  info,
-  router
-};
+return router;
+

@@ -1,6 +1,7 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { Module } from '../../../handlers/moduleInit';
+import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { apiAuth } from '../../../middleware/auth';
 import logger from '../../../handlers/logger';
 import axios from 'axios';
 import { Buffer } from 'buffer';
@@ -8,21 +9,18 @@ import QueueHandler from '../../../handlers/utils/core/queueer';
 import { safeParseJSON, safeStringifyJSON } from '../../../utils/json';
 
 const queueer = new QueueHandler();
-
-
 const prisma = new PrismaClient();
 
-const coreModule: Module = {
-  info: {
-    name: 'Core Module',
-    description: 'This file is for all core functionality.',
-    version: '1.0.0',
-    moduleVersion: '1.0.0',
-    author: 'AirLinkLab',
-    license: 'MIT',
-  },
+export const info = {
+  name: 'Alternative API',
+  description: 'Alternative API endpoints',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
+};
 
-  router: () => {
+export const router = () => {
+  const router = express.Router();
+
     let validKeys: string[] = [];
 
     async function loadApiKeys() {
@@ -498,4 +496,4 @@ const coreModule: Module = {
   },
 };
 
-export default coreModule;
+

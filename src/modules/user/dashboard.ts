@@ -1,16 +1,20 @@
-import { Router, Request, Response } from 'express';
+import express from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { isAuthenticated } from '../../middleware/auth';
-import { logger } from '../../utils/logger';
-
-export const info = {
-  name: 'User Dashboard Module',
-  description: 'User dashboard and account management',
-  version: '1.0.0'
-};
+import logger from '../../handlers/logger';
 
 const prisma = new PrismaClient();
-const router = Router();
+
+export const info = {
+  name: 'User Dashboard',
+  description: 'User dashboard functionality',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
+};
+
+export const router = () => {
+  const router = express.Router();
 
 // Apply authentication to all dashboard routes
 router.use('/dashboard/*', isAuthenticated());
@@ -86,6 +90,5 @@ router.put('/account', isAuthenticated(), async (req: Request, res: Response): P
   }
 });
 
-export const dashboardRouter = router;
+return router;
 
-export default { info, dashboardRouter };

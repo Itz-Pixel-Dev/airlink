@@ -1,6 +1,7 @@
-import { Router, Request } from 'express';
-import { Module } from '../../handlers/moduleInit';
+import express from 'express';
+import { Request } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { isAuthenticated } from '../../middleware/auth';
 import { WebSocket } from 'ws';
 import logger from '../../handlers/logger';
 
@@ -14,18 +15,16 @@ interface WSRequest extends Request {
 
 const prisma = new PrismaClient();
 
-const wsUsersModule: Module = {
-  info: {
-    name: 'WS Users Module',
-    description: 'This file is for the users functionality.',
-    version: '1.0.0',
-    moduleVersion: '1.0.0',
-    author: 'AirLinkLab',
-    license: 'MIT',
-  },
+export const info = {
+  name: 'User WebSocket',
+  description: 'WebSocket functionality for users',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
+};
 
-  router: () => {
-    const router = Router();
+export const router = () => {
+  const router = express.Router();
+
 
     router.ws('/online-check', async (ws: WebSocketWithAlive, req: WSRequest) => {
       ws.isAlive = true;
@@ -63,10 +62,6 @@ const wsUsersModule: Module = {
   },
 };
 
-process.on('SIGINT', async () => {
-  await prisma.$disconnect();
-  process.exit();
-});
 
-export default wsUsersModule;
+
 

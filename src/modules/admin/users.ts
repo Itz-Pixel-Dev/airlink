@@ -1,18 +1,21 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { isAuthenticated } from '../../middleware/auth';
-import { logger } from '../../utils/logger';
+import logger from '../../handlers/logger';
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 export const info = {
-  name: 'Admin Users Module',
+  name: 'Admin Users',
   description: 'User management for administrators',
-  version: '1.0.0'
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
 };
 
-const router = Router();
+export const router = () => {
+  const router = express.Router();
 
 // Admin check middleware
 const isAdmin = (req: Request, res: Response, next: NextFunction): void => {
@@ -140,7 +143,6 @@ router.delete('/admin/users/:id',
   }
 );
 
-export const usersRouter = router;
+return router;
 
-export default { info, usersRouter };
 

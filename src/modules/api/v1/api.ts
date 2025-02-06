@@ -1,14 +1,20 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
-
-export const info = {
-  name: 'API Module',
-  description: 'API endpoints for external access',
-  version: '1.0.0'
-};
+import { apiAuth } from '../../../middleware/auth';
+import logger from '../../../handlers/logger';
 
 const prisma = new PrismaClient();
-const router = Router();
+
+export const info = {
+  name: 'API v1',
+  description: 'API version 1 endpoints',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
+};
+
+export const router = () => {
+  const router = express.Router();
 
 // API key validation middleware
 const validateApiKey = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -116,6 +122,5 @@ router.get('/api/v1/nodes', async (req: Request, res: Response) => {
   }
 });
 
-export const apiRouter = router;
+return router;
 
-export default { info, apiRouter };

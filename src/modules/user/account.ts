@@ -1,5 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { Module } from '../../handlers/moduleInit';
+import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { isAuthenticated } from '../../handlers/utils/auth/authUtil';
 import { getUser } from '../../handlers/utils/user/user';
@@ -12,18 +12,16 @@ interface ErrorMessage {
   message?: string;
 }
 
-const accountModule: Module = {
-  info: {
-    name: 'Account Module',
-    description: 'This file is for account functionality.',
-    version: '1.0.0',
-    moduleVersion: '1.0.0',
-    author: 'AirLinkLab',
-    license: 'MIT',
-  },
+export const info = {
+  name: 'User Account',
+  description: 'User account management',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
+};
 
-  router: () => {
-    const router = Router();
+export const router = () => {
+  const router = express.Router();
+
 
     router.get(
       '/account',
@@ -312,4 +310,3 @@ process.on('SIGINT', async () => {
   process.exit();
 });
 
-export default accountModule;

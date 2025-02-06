@@ -1,7 +1,8 @@
-import { Router, Request, Response, RequestHandler } from 'express';
+import express from 'express';
+import { Request, Response, RequestHandler } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { isAuthenticated, isAuthenticatedForServer } from '../../middleware/auth';
-import { logger } from '../../utils/logger';
+import logger from '../../handlers/logger';
 import { checkEulaStatus, isWorld } from '../../handlers/features';
 import * as minecraftStatus from 'minecraft-status';
 import { safeParseJSON, safeStringifyJSON } from '../../utils/json';
@@ -48,13 +49,14 @@ function parseServerInfo(server: any): ServerImageInfo {
 const prisma = new PrismaClient();
 
 export const info = {
-  name: 'Server Module',
-  description: 'Server management and control',
+  name: 'User Server',
+  description: 'User server management functionality',
   version: '1.0.0',
   moduleVersion: '1.0.0'
 };
 
-const router = Router();
+export const router = () => {
+  const router = express.Router();
 
 router.get('/server/:serverId/files/edit',
   isAuthenticated() as RequestHandler,
@@ -86,10 +88,6 @@ router.get('/server/:serverId/files/edit',
 
 // Add other routes here...
 
-export const createRouter = () => router;
+return router;
 
-// Cleanup handlers
-process.on('exit', async () => {
-  await prisma.$disconnect();
-});
 

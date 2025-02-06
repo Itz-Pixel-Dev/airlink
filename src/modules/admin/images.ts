@@ -1,23 +1,21 @@
-import { Router, Request, Response } from 'express';
+import express from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { Module } from '../../handlers/moduleInit';
-import { isAuthenticated } from '../../handlers/utils/auth/authUtil';
+import { isAdmin } from '../../middleware/auth';
 import logger from '../../handlers/logger';
 
 const prisma = new PrismaClient();
 
-const adminModule: Module = {
-  info: {
-    name: 'Admin Module for Images',
-    description: 'This file is for admin functionality.',
-    version: '1.0.0',
-    moduleVersion: '1.0.0',
-    author: 'AirLinkLab',
-    license: 'MIT',
-  },
+export const info = {
+  name: 'Admin Images',
+  description: 'Image management for administrators',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
+};
 
-  router: () => {
-    const router = Router();
+export const router = () => {
+  const router = express.Router();
+
 
     router.get('/admin/images', isAuthenticated(true), async (req: Request, res: Response): Promise<void> => {
       try {
@@ -77,13 +75,6 @@ const adminModule: Module = {
     });
 
     return router;
-  },
-};
+  };
 
-process.on('SIGINT', async () => {
-  await prisma.$disconnect();
-  process.exit();
-});
-
-export default adminModule;
 

@@ -1,18 +1,21 @@
-import { Router, Request, Response } from 'express';
+import express from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { getDatabaseConfig, getDatabaseHost, validateDatabaseName, generateConnectionString } from '../../handlers/utils/database/databaseUtil';
 import { isAuthenticated, isAuthenticatedForServer } from '../../middleware/auth';
-import { logger } from '../../utils/logger';
-
-export const info = {
-  name: 'Database Management',
-  moduleVersion: '1.0.0',
-  version: '1.0.0',
-  description: 'Database management module for servers'
-};
+import logger from '../../handlers/logger';
 
 const prisma = new PrismaClient();
-const router = Router();
+
+export const info = {
+  name: 'User Database',
+  description: 'User database management',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
+};
+
+export const router = () => {
+  const router = express.Router();
 
 // List databases for a server
 router.get('/server/:serverId/databases',
@@ -134,7 +137,6 @@ router.delete('/server/:serverId/databases/:id',
   }
 );
 
-export const databaseRouter = router;
+return router;
 
-export default { info, databaseRouter };
 

@@ -1,18 +1,23 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { isAuthenticated } from '../../middleware/auth';
-
-export const info = {
-  name: 'Admin Servers Module',
-  description: 'Server management for administrators',
-  version: '1.0.0'
-};
+import { isAdmin } from '../../middleware/auth';
+import logger from '../../handlers/logger';
 
 const prisma = new PrismaClient();
-const router = Router();
 
-// Admin check middleware
-const isAdmin = (req: Request, res: Response, next: NextFunction): void => {
+export const info = {
+  name: 'Admin Servers',
+  description: 'Server management for administrators',
+  version: '1.0.0',
+  moduleVersion: '1.0.0'
+};
+
+export const router = () => {
+  const router = express.Router();
+
+  // Admin check middleware
+  const isAdmin = (req: Request, res: Response, next: NextFunction): void => {
   if (req.session?.user?.isAdmin) {
     next();
     return;
@@ -33,7 +38,6 @@ router.get('/admin/servers', isAuthenticated(), isAdmin, async (req: Request, re
   }
 });
 
-export const serversRouter = router;
+return router;
 
-export default { info, serversRouter };
 
